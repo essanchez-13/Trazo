@@ -39,7 +39,7 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "Yaken13s",
+        "owner": "essanchez-13",
         "repo": "trazo-releases",
         "releaseType": "release"
       }

@@ -4,7 +4,7 @@ Cuadernos digitales para escribir a mano en Windows: tinta con presión, carpeta
 
 ## Descargar
 
-**[⬇ Descargar Trazo para Windows](https://github.com/Yaken13s/trazo-releases/releases/latest/download/Trazo-Setup.exe)**
+**[⬇ Descargar Trazo para Windows](https://github.com/essanchez-13/trazo-releases/releases/latest/download/Trazo-Setup.exe)**
 
 ## Instalar
 
