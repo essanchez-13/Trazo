@@ -1,7 +1,7 @@
-{
+﻿{
   "name": "trazo",
   "productName": "Trazo",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "Cuadernos digitales para escribir a mano",
   "private": true,
   "main": "electron/main.cjs",

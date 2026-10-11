@@ -198,10 +198,52 @@ const NOTAS: Sticker[] = [
     <path d="M146 58 L174 54 L170 84" fill="none" stroke="#845ef7" stroke-width="10"/>`),
 ]
 
+const ANTOJOS: Sticker[] = [
+  s('pizza', 'Pizza', `
+    <path d="M30 52 Q100 26 170 52 L104 186 Q100 192 96 186 Z" fill="#ffd166"/>
+    <path d="M58 116 Q62 140 72 150 M132 112 Q128 132 120 146" fill="none" stroke="#f4b740" stroke-width="7"/>
+    <path d="M22 44 Q100 6 178 44 Q186 62 172 66 Q100 36 28 66 Q14 62 22 44 Z" fill="#e39b47"/>
+    <path d="M44 42 Q100 20 156 42" fill="none" stroke="#f7c27a" stroke-width="5" opacity=".8"/>
+    <circle cx="78" cy="86" r="15" fill="#e63946"/><circle cx="126" cy="90" r="13" fill="#e63946"/><circle cx="100" cy="132" r="12" fill="#e63946"/>
+    <circle cx="74" cy="82" r="4" fill="#ff8a93" stroke="none"/><circle cx="122" cy="86" r="3.5" fill="#ff8a93" stroke="none"/>
+    <ellipse cx="104" cy="104" rx="9" ry="5" fill="#52b788" transform="rotate(-30 104 104)"/>
+    <ellipse cx="84" cy="114" rx="7" ry="4" fill="#52b788" transform="rotate(25 84 114)" stroke-width="3"/>`),
+  s('donut', 'Dona', `
+    <circle cx="100" cy="104" r="76" fill="#f2c086"/>
+    <path d="M100 38 C 136 34, 170 60, 170 98 C 172 120, 160 128, 150 132 C 140 150, 120 160, 100 158 C 76 162, 50 148, 44 126 C 32 116, 30 96, 36 84 C 46 54, 70 38, 100 38 Z" fill="#ff8fc0"/>
+    <circle cx="100" cy="100" r="22" fill="#ffffff"/>
+    <g stroke-width="0" >
+      <rect x="66" y="62" width="14" height="5" rx="2.5" fill="#ffe066" transform="rotate(-30 73 64)"/>
+      <rect x="120" y="58" width="14" height="5" rx="2.5" fill="#74c0fc" transform="rotate(20 127 60)"/>
+      <rect x="140" y="98" width="14" height="5" rx="2.5" fill="#ffffff" transform="rotate(70 147 100)"/>
+      <rect x="58" y="110" width="14" height="5" rx="2.5" fill="#69db7c" transform="rotate(50 65 112)"/>
+      <rect x="96" y="138" width="14" height="5" rx="2.5" fill="#ffe066" transform="rotate(-15 103 140)"/>
+      <rect x="128" y="130" width="14" height="5" rx="2.5" fill="#b197fc" transform="rotate(-40 135 132)"/>
+      <rect x="84" y="48" width="14" height="5" rx="2.5" fill="#b197fc" transform="rotate(10 91 50)"/>
+    </g>`),
+  s('icecream', 'Helado', `
+    <path d="M62 102 L100 188 L138 102 Z" fill="#f2b766"/>
+    <path d="M74 120 L120 150 M86 104 L130 128 M126 120 L80 150 M114 104 L70 128" stroke="#d68f3a" stroke-width="4"/>
+    <circle cx="78" cy="94" r="30" fill="#b5ead7"/>
+    <circle cx="122" cy="94" r="30" fill="#ffc8dd"/>
+    <circle cx="100" cy="64" r="34" fill="#fff1b8"/>
+    <circle cx="104" cy="26" r="11" fill="#e63946"/>
+    <path d="M104 16 Q110 4 122 6" fill="none" stroke-width="4"/>
+    ${face(100, 66, 0.75)}`),
+  s('popcorn', 'Palomitas', `
+    <circle cx="66" cy="70" r="20" fill="#fff6d6"/><circle cx="96" cy="56" r="22" fill="#fffaf0"/><circle cx="128" cy="62" r="20" fill="#fff6d6"/>
+    <circle cx="146" cy="84" r="16" fill="#fffaf0"/><circle cx="56" cy="92" r="16" fill="#fffaf0"/><circle cx="110" cy="82" r="18" fill="#ffe8a3"/>
+    <path d="M48 96 L152 96 L138 184 L62 184 Z" fill="#ffffff"/>
+    <path d="M64 96 L72 184 L88 184 L84 96 Z M100 96 L100 184 L116 184 L118 96 Z M136 96 L130 184 L138 184 L152 96 Z" fill="#ff5d5d" stroke-width="0"/>
+    <path d="M48 96 L152 96 L138 184 L62 184 Z" fill="none"/>
+    ${face(100, 138, 0.8)}`),
+]
+
 export const STICKER_PACKS: StickerPack[] = [
   { id: 'temas', label: 'Para empezar un tema', icon: 'rocket', items: TEMAS },
   { id: 'escuela', label: 'Escuela', icon: 'apple', items: ESCUELA },
   { id: 'reacciones', label: 'Reacciones', icon: 'star', items: REACCIONES },
+  { id: 'antojos', label: 'Antojos', icon: 'pizza', items: ANTOJOS },
   { id: 'notas', label: 'Notas y cintas', icon: 'note-yellow', items: NOTAS },
 ]
 

@@ -8,6 +8,8 @@ export interface UpdateStatus {
   version?: string
   percent?: number
   message?: string
+  /** Notas de la versión (de GitHub). */
+  notes?: string
 }
 
 declare global {

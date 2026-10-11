@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
-  BookOpen, ChevronRight, FolderPlus, ImagePlus, MoreHorizontal, Plus, Presentation, Search, Settings as SettingsIcon,
+  BookOpen, ChevronRight, ImageOff, Pencil, Wallpaper, FolderPlus, ImagePlus, MoreHorizontal, Plus, Presentation, Search, Settings as SettingsIcon,
   Upload, X,
 } from 'lucide-react'
-import type { CoverLabel, Folder, Library as Lib, NotebookMeta, PageSizeKind, Paper, PaperColor } from '../types'
+import type { CoverLabel, Folder, Library as Lib, LibraryHome, NotebookMeta, PageSizeKind, Paper, PaperColor } from '../types'
 import { COVERS, COVER_DESIGNS, DEFAULT_LABEL, FOLDER_COLORS, LABEL_COLORS } from '../types'
 import { storeImageFile, useAssetUrl } from '../assets'
 import { Modal } from './Modal'
@@ -34,6 +34,7 @@ interface Props {
   onDeleteNotebook: (id: string) => void
   onDeleteFolder: (id: string) => void
   onImport: (files: File[]) => void
+  onUpdateHome: (patch: Partial<LibraryHome>) => void
   onExport: (id: string, kind: 'pdf' | 'trazo') => void
 }
 
@@ -55,6 +56,7 @@ export function Library(props: Props) {
   const [dialog, setDialog] = useState<Dialog | null>(null)
   const [menu, setMenu] = useState<string | null>(null)
   const [newMenu, setNewMenu] = useState(false)
+  const [bgMenu, setBgMenu] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [dropping, setDropping] = useState(false)
   // Arrastrar cuadernos y carpetas para moverlos ('root' = Documentos).
@@ -63,11 +65,11 @@ export function Library(props: Props) {
   const importRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    if (!menu && !newMenu) return
-    const close = () => { setMenu(null); setNewMenu(false) }
+    if (!menu && !newMenu && !bgMenu) return
+    const close = () => { setMenu(null); setNewMenu(false); setBgMenu(false) }
     window.addEventListener('pointerdown', close)
     return () => window.removeEventListener('pointerdown', close)
-  }, [menu, newMenu])
+  }, [menu, newMenu, bgMenu])
 
   const trail = useMemo(() => {
     const out: Folder[] = []
@@ -94,6 +96,18 @@ export function Library(props: Props) {
     library.folders.filter((f) => f.parentId === id).length + library.notebooks.filter((n) => n.folderId === id).length
 
   const current = trail[trail.length - 1]
+  const homeName = library.home?.name?.trim() || 'Documentos'
+
+  // Fondo: el de la carpeta actual, o el de la carpeta de arriba más cercana, o el del inicio.
+  const background = [...trail].reverse().find((f) => f.background)?.background ?? library.home?.background
+  const backgroundUrl = useAssetUrl(background)
+  const ownBackground = current ? current.background : library.home?.background
+  const bgRef = useRef<HTMLInputElement>(null)
+  const [renaming, setRenaming] = useState(false)
+  const setBackground = (src: string | undefined) => {
+    if (current) props.onUpdateFolder(current.id, { background: src })
+    else props.onUpdateHome({ background: src })
+  }
 
   /** ¿Se puede soltar lo que se arrastra dentro de esta carpeta? (null = Documentos) */
   const canDropInto = (target: string | null) => {
@@ -149,7 +163,7 @@ export function Library(props: Props) {
   }
 
   return (
-    <div className="library">
+    <div className={`library ${backgroundUrl ? 'has-bg' : ''}`} style={backgroundUrl ? { ['--lib-bg' as string]: `url("${backgroundUrl}")` } : undefined}>
       <header className="topbar lib-bar">
         <div className="bar-left">
           <div className="brand">
@@ -180,7 +194,7 @@ export function Library(props: Props) {
                 className={`${!folderId ? 'current' : ''} ${dropTarget === 'root' ? 'drop-target' : ''}`}
                 {...dropProps(null)}
               >
-                Documentos
+                {homeName}
               </button>
               {trail.map((f) => (
                 <span key={f.id} className="crumb">
@@ -195,9 +209,58 @@ export function Library(props: Props) {
                 </span>
               ))}
             </nav>
-            <h1>{q ? 'Resultados' : current ? current.name : 'Documentos'}</h1>
+            {!q && !current && renaming ? (
+              <input
+                className="title-edit"
+                autoFocus
+                defaultValue={homeName}
+                onFocus={(e) => e.target.select()}
+                onBlur={(e) => { props.onUpdateHome({ name: e.target.value.trim() || undefined }); setRenaming(false) }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                  if (e.key === 'Escape') setRenaming(false)
+                }}
+              />
+            ) : (
+              <h1 className="lib-title">
+                {q ? 'Resultados' : current ? current.name : homeName}
+                {!q && !current && (
+                  <button className="icon-btn small rename-btn" onClick={() => setRenaming(true)} title="Cambiar el nombre">
+                    <Pencil size={15} />
+                  </button>
+                )}
+              </h1>
+            )}
           </div>
           <div className="lib-actions">
+            <div className="card-menu-wrap new-wrap" onPointerDown={(e) => e.stopPropagation()}>
+              <button className="btn ghost" onClick={() => setBgMenu((v) => !v)} title={current ? 'Fondo de esta carpeta' : 'Fondo del inicio'}>
+                <Wallpaper size={17} /> Fondo
+              </button>
+              {bgMenu && (
+                <div className="menu new-menu">
+                  <button onClick={() => { setBgMenu(false); bgRef.current?.click() }}>
+                    <Wallpaper size={17} /> <span>{ownBackground ? 'Cambiar imagen' : 'Elegir una imagen'}<small>{current ? `Solo dentro de «${current.name}»` : `Para «${homeName}» y sus carpetas`}</small></span>
+                  </button>
+                  {ownBackground && (
+                    <button onClick={() => { setBgMenu(false); setBackground(undefined) }}>
+                      <ImageOff size={17} /> <span>Quitar fondo</span>
+                    </button>
+                  )}
+                </div>
+              )}
+              <input
+                ref={bgRef}
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={async (e) => {
+                  const f = e.target.files?.[0]
+                  e.target.value = ''
+                  if (f) setBackground((await storeImageFile(f, 2400)).src)
+                }}
+              />
+            </div>
             <button className="btn ghost" onClick={() => importRef.current?.click()} title="Importar un PDF o un archivo de Trazo">
               <Upload size={17} /> Importar
             </button>
@@ -300,7 +363,7 @@ export function Library(props: Props) {
         )}
         {dragItem && (
           <div className="drag-hint">
-            Suelta sobre una carpeta para guardarlo ahí{trail.length ? ', o sobre la ruta de arriba (por ejemplo «Documentos») para sacarlo' : ''}.
+            Suelta sobre una carpeta para guardarlo ahí{trail.length ? `, o sobre la ruta de arriba (por ejemplo «${homeName}») para sacarlo` : ''}.
           </div>
         )}
         {dropping && <div className="drop-hint"><Upload size={28} /> Suelta aquí tus PDF o archivos de Trazo</div>}
@@ -716,7 +779,7 @@ function MoveDialog(props: { library: Lib; target: Target; onClose: () => void; 
   const currentParent = target.type === 'notebook' ? target.item.folderId : target.item.parentId
   const [dest, setDest] = useState<string | null>(currentParent)
 
-  const rows: { id: string | null; name: string; depth: number; color?: string }[] = [{ id: null, name: 'Documentos', depth: 0 }]
+  const rows: { id: string | null; name: string; depth: number; color?: string }[] = [{ id: null, name: library.home?.name?.trim() || 'Documentos', depth: 0 }]
   const walk = (parent: string | null, depth: number) => {
     library.folders
       .filter((f) => f.parentId === parent && !blocked.has(f.id))

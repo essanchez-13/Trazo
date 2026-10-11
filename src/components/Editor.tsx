@@ -28,6 +28,7 @@ import { SettingsDialog } from './SettingsDialog'
 import { StickerPicker, pushRecent } from './StickerPicker'
 import { PageMenu } from './PageMenu'
 import { SizeControl } from './SizeControl'
+import { EraserOptions } from './EraserOptions'
 
 const PAGE_GAP = 28
 const PAGES_PAD_TOP = 70
@@ -600,6 +601,17 @@ export function Editor({ meta, active, onMetaChange }: Props) {
     if (tool !== 'lasso') setSelection(null)
   }, [tool])
 
+  // Herramienta a la que vuelve el borrador si está activado "volver al soltar".
+  const prevTool = useRef<Tool>('pen')
+  useEffect(() => {
+    if (tool !== 'eraser') prevTool.current = tool
+  }, [tool])
+  const autoDeselectRef = useRef(settings.eraser.autoDeselect)
+  autoDeselectRef.current = settings.eraser.autoDeselect
+  const onEraseEnd = useCallback(() => {
+    if (autoDeselectRef.current) setTool(prevTool.current)
+  }, [])
+
   const toggleSidebar = () => {
     setSidebar((v) => {
       savePref('trazo.sidebar', v ? '0' : '1')
@@ -645,7 +657,7 @@ export function Editor({ meta, active, onMetaChange }: Props) {
   const palette = isHighlighter ? settings.highlighterPalette : settings.penPalette
   const custom = isHighlighter ? settings.highlighterColors : settings.penColors
   const savedSizes = isHighlighter ? settings.highlighterSizes : settings.penSizes
-  const showOptions = tool === 'pen' || tool === 'highlighter' || tool === 'shape' || tool === 'diagram'
+  const showOptions = tool === 'pen' || tool === 'highlighter' || tool === 'shape' || tool === 'diagram' || tool === 'eraser'
   const thinning = thinningFor(settings.pressure)
   const streamline = streamlineFor(settings.stabilization)
   const menuIndex = pageMenu === null ? pageIndex : Math.min(pageMenu, pages.length - 1)
@@ -799,6 +811,13 @@ export function Editor({ meta, active, onMetaChange }: Props) {
 
           {showOptions && (
             <div className="tool-options">
+              {tool === 'eraser' && (
+                <EraserOptions
+                  settings={settings.eraser}
+                  onChange={(p) => updateSettings({ eraser: { ...settings.eraser, ...p } })}
+                  onClearPage={() => { setSelection(null); updatePage(pageIndex, (p) => ({ ...p, strokes: [], images: [], nodes: [], links: [] })) }}
+                />
+              )}
               {tool === 'pen' && (
                 <>
                   {PEN_TYPES.map((t) => (
@@ -867,7 +886,7 @@ export function Editor({ meta, active, onMetaChange }: Props) {
                   <span className="bar-divider" />
                 </>
               )}
-              {tool !== 'diagram' && (<>
+              {tool !== 'diagram' && tool !== 'eraser' && (<>
               <SizeControl
                 saved={savedSizes}
                 onSavedChange={(list) => updateSettings(isHighlighter ? { highlighterSizes: list } : { penSizes: list })}
@@ -924,6 +943,8 @@ export function Editor({ meta, active, onMetaChange }: Props) {
                     onSelect={setSelection}
                     onCopySelection={copySelection}
                     onDropFiles={onDropFiles}
+                    eraser={settings.eraser}
+                    onEraseEnd={onEraseEnd}
                   />
                   <div className="page-actions">
                     <span>{i + 1}</span>

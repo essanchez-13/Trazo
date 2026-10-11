@@ -32,7 +32,10 @@ $setup = "$out/Trazo-Setup-$version.exe"
 # Copia con nombre fijo, para que el enlace de descarga nunca cambie.
 Copy-Item $setup "$out/Trazo-Setup.exe" -Force
 
-gh release create "v$version" --repo $repo --title "Trazo $version" --notes "Versión $version de Trazo." `
+# Las notas salen de src/changelog.json (las mismas que muestra la app al actualizarse).
+$notes = "$out/notas.md"
+node scripts/release-notes.cjs $version $notes
+gh release create "v$version" --repo $repo --title "Trazo $version" --notes-file $notes `
   $setup "$setup.blockmap" "$out/latest.yml" "$out/Trazo-Setup.exe"
 if ($LASTEXITCODE -ne 0) { throw 'No se pudo crear la versión en GitHub' }
 

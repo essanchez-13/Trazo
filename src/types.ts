@@ -138,12 +138,23 @@ export interface Folder {
   name: string
   parentId: string | null
   color?: string
+  /** Imagen de fondo al estar dentro de la carpeta ("asset:<id>"). */
+  background?: string
   createdAt: number
+}
+
+/** Pantalla de inicio de la biblioteca. */
+export interface LibraryHome {
+  /** Nombre en lugar de "Documentos". */
+  name?: string
+  /** Imagen de fondo ("asset:<id>"). */
+  background?: string
 }
 
 export interface Library {
   folders: Folder[]
   notebooks: NotebookMeta[]
+  home?: LibraryHome
 }
 
 /** Trazos, imágenes y figuras seleccionados. */
@@ -156,6 +167,22 @@ export interface ToolStyle {
   color: string
   size: number
 }
+
+/** Qué borra el borrador y cómo. */
+export interface EraserSettings {
+  /** Trazo completo o solo la parte que se toca. */
+  mode: 'stroke' | 'precise'
+  /** Radio en unidades de página. */
+  size: number
+  pen: boolean
+  highlighter: boolean
+  shapes: boolean
+  images: boolean
+  /** Al soltar, volver a la herramienta que se usaba antes del borrador. */
+  autoDeselect: boolean
+}
+
+export const ERASER_SIZES = [5, 10, 20]
 
 export interface Settings {
   theme: 'light' | 'dark' | 'system'
@@ -173,6 +200,7 @@ export interface Settings {
   /** Grosores guardados (botones rápidos de la barra). */
   penSizes: number[]
   highlighterSizes: number[]
+  eraser: EraserSettings
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -186,6 +214,7 @@ export const DEFAULT_SETTINGS: Settings = {
   highlighterPalette: ['#ffe066', '#a6ec9a', '#ffadd2', '#a5d8ff', '#ffc078'],
   penSizes: [2.6, 4, 6.5],
   highlighterSizes: [14, 20, 28],
+  eraser: { mode: 'stroke', size: 10, pen: true, highlighter: true, shapes: true, images: false, autoDeselect: false },
 }
 
 export const thinningFor = (pressure: number) => 0.08 + pressure * 0.6

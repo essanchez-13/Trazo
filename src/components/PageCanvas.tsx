@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { ArrowLeftRight, Copy, CopyPlus, CornerDownRight, Minus, MoveRight, Slash, Spline, Trash2, Type } from 'lucide-react'
 import type {
-  DiagramLink, DiagramNode, ImageItem, NodeKind, Page, PenType, Point, Selection, ShapeTool, Stroke, Tool, ToolStyle,
+  DiagramLink, DiagramNode, EraserSettings, ImageItem, NodeKind, Page, PenType, Point, Selection, ShapeTool, Stroke, Tool, ToolStyle,
 } from '../types'
 import { INK, NODE_FILLS, PEN_COLORS, pageSize, paperInfo, uid } from '../types'
 import {
@@ -9,13 +9,13 @@ import {
   translateImage, translateNode, translateStroke, unionBox, type Box,
 } from '../ink/render'
 import { buildShape, cleanStroke, mapPressure, recognize, snapLineEnd, type Shape } from '../ink/shapes'
+import { eraseAt } from '../ink/erase'
 import {
   DIRS, FONT, drawLinks, drawNode, drawRoute, elbowPath, linkAt, linkRoute, nearestPort, nodeAt, nodePath, portPoint, ports,
   routeEnds, routeSamples, type Port, type Route,
 } from '../ink/diagram'
 
 const HOLD_MS = 480
-const ERASER_R = 9
 const SEL_PAD = 8
 // Límite de píxeles por canvas para no reventar la memoria con zoom alto.
 const MAX_PIXELS = 9_000_000
@@ -26,7 +26,7 @@ type Gesture =
       anchor: Point; timer: number; shape: Shape | null
     }
   | { kind: 'shape'; pointerId: number; start: Point; end: Point; constrain: boolean }
-  | { kind: 'erase'; pointerId: number; last: Point; pos: Point; removed: Set<string> }
+  | { kind: 'erase'; pointerId: number; last: Point; pos: Point; strokes: Stroke[]; images: ImageItem[]; changed: boolean; temporary: boolean }
   | { kind: 'lasso'; pointerId: number; points: Point[] }
   | { kind: 'move'; pointerId: number; start: Point; dx: number; dy: number; tapNode?: string }
   | { kind: 'scale'; pointerId: number; ax: number; ay: number; base: number; k: number }
@@ -59,6 +59,9 @@ interface Props {
   onSelect: (sel: Selection | null) => void
   onCopySelection: () => void
   onDropFiles: (pageId: string, files: File[], x: number, y: number) => void
+  eraser: EraserSettings
+  /** Al terminar de borrar con la herramienta borrador (para volver a la anterior si se pidió). */
+  onEraseEnd: () => void
 }
 
 export function newNode(kind: NodeKind, x: number, y: number, w: number, h: number): DiagramNode {
@@ -218,7 +221,7 @@ export const PageCanvas = memo(function PageCanvas(props: Props) {
       }
     } else if (g?.kind === 'erase') {
       ctx.beginPath()
-      ctx.arc(g.pos[0], g.pos[1], ERASER_R, 0, Math.PI * 2)
+      ctx.arc(g.pos[0], g.pos[1], propsRef.current.eraser.size, 0, Math.PI * 2)
       ctx.fillStyle = dark ? 'rgba(255,255,255,0.08)' : 'rgba(40,44,52,0.06)'
       ctx.fill()
       ctx.lineWidth = 1 / zoom
@@ -337,7 +340,9 @@ export const PageCanvas = memo(function PageCanvas(props: Props) {
     if (!c) return
     const ctx = c.getContext('2d')!
     ctx.setTransform(scale, 0, 0, scale, 0, 0)
-    drawPage(ctx, page, onImageReady, hidden.current, editing)
+    const g = gesture.current
+    const shown = g?.kind === 'erase' ? { ...page, strokes: g.strokes, images: g.images } : page
+    drawPage(ctx, shown, onImageReady, hidden.current, editing)
     // Hasta que la base se redibuja, el trazo terminado sigue en la capa "en vivo":
     // así no parpadea al soltar el lápiz.
     if (!gesture.current) drawLive()
@@ -385,19 +390,18 @@ export const PageCanvas = memo(function PageCanvas(props: Props) {
   }
 
   const eraseAlong = (g: Extract<Gesture, { kind: 'erase' }>, to: Point) => {
+    const settings = propsRef.current.eraser
     const from = g.last
     const d = Math.hypot(to[0] - from[0], to[1] - from[1])
-    const steps = Math.max(1, Math.ceil(d / (ERASER_R * 0.6)))
+    const steps = Math.max(1, Math.ceil(d / (settings.size * 0.5)))
     let hit = false
     for (let i = 1; i <= steps; i++) {
       const p: Point = [from[0] + ((to[0] - from[0]) * i) / steps, from[1] + ((to[1] - from[1]) * i) / steps]
-      for (const s of propsRef.current.page.strokes) {
-        if (g.removed.has(s.id)) continue
-        if (strokeHits(s, p, ERASER_R)) {
-          g.removed.add(s.id)
-          hidden.current.add(s.id)
-          hit = true
-        }
+      const r = eraseAt(g.strokes, g.images, p, settings)
+      if (r.changed) {
+        g.strokes = r.strokes
+        g.images = r.images
+        g.changed = hit = true
       }
     }
     g.last = to
@@ -550,7 +554,11 @@ export const PageCanvas = memo(function PageCanvas(props: Props) {
       onDiagramDown(e, pt)
       return
     } else if (active === 'eraser') {
-      const g: Gesture = { kind: 'erase', pointerId: e.pointerId, last: pt, pos: pt, removed: new Set() }
+      const pg = propsRef.current.page
+      const g: Gesture = {
+        kind: 'erase', pointerId: e.pointerId, last: pt, pos: pt,
+        strokes: pg.strokes, images: pg.images ?? [], changed: false, temporary: penEraser,
+      }
       gesture.current = g
       eraseAlong(g, pt)
     } else {
@@ -731,9 +739,10 @@ export const PageCanvas = memo(function PageCanvas(props: Props) {
     } else if (g.kind === 'pan') {
       drawLive()
     } else if (g.kind === 'erase') {
-      hidden.current = new Set()
-      if (g.removed.size) commit({ strokes: strokes.filter((s) => !g.removed.has(s.id)) })
+      if (g.changed) commit({ strokes: g.strokes, images: g.images })
       else drawLive()
+      // El botón borrador del lápiz es temporal: no cambia de herramienta.
+      if (!g.temporary) propsRef.current.onEraseEnd()
     } else if (g.kind === 'lasso') {
       const poly = g.points
       const ids = new Set<string>()

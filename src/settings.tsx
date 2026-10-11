@@ -36,6 +36,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     loadSettings().then((s) => {
       const merged = { ...DEFAULT_SETTINGS, ...(s ?? {}) }
+      merged.eraser = { ...DEFAULT_SETTINGS.eraser, ...(s?.eraser ?? {}) }
       ref.current = merged
       setSettings(merged)
     })

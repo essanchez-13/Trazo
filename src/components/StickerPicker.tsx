@@ -26,7 +26,11 @@ export function StickerPicker({ onPick }: { onPick: (st: Sticker) => void }) {
 
   const jump = (id: string) => {
     const el = scrollRef.current?.querySelector(`[data-section="${id}"]`) as HTMLElement | null
-    if (el && scrollRef.current) scrollRef.current.scrollTo({ top: el.offsetTop - 8, behavior: 'smooth' })
+    const box = scrollRef.current
+    if (!el || !box) return
+    // Posición de la sección dentro de la lista con scroll (no respecto a toda la ventana).
+    const top = el.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop
+    box.scrollTo({ top: top - 4, behavior: 'smooth' })
   }
 
   return (

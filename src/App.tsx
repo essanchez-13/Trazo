@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Home, Plus, X } from 'lucide-react'
-import type { Folder, Library as Lib, NotebookMeta } from './types'
+import type { Folder, Library as Lib, LibraryHome, NotebookMeta } from './types'
 import { uid } from './types'
 import { deleteAsset, deleteNotebookData, loadLibrary, loadNotebook, saveLibrary, saveNotebook } from './storage'
 import { Library, type NewNotebook } from './components/Library'
 import { Editor, newPage } from './components/Editor'
 import { exportPdf, exportTrazo, importPdf, importTrazo } from './exporter'
-import { UpdateToast } from './updates'
+import { UpdateToast, WhatsNew } from './updates'
+import { hideSplash } from './splash'
 
 const TABS_KEY = 'trazo.tabs'
 
@@ -28,7 +29,7 @@ export function App() {
   const [busy, setBusy] = useState<string | null>(null)
 
   useEffect(() => {
-    loadLibrary().then((l) => { libRef.current = l; setLibrary(l) })
+    loadLibrary().then((l) => { libRef.current = l; setLibrary(l); hideSplash() })
   }, [])
 
   useEffect(() => {
@@ -73,6 +74,9 @@ export function App() {
   const updateNotebook = useCallback((id: string, patch: Partial<NotebookMeta>) => {
     update((l) => ({ ...l, notebooks: l.notebooks.map((n) => (n.id === id ? { ...n, ...patch } : n)) }))
   }, [update])
+
+  const updateHome = (patch: Partial<LibraryHome>) =>
+    update((l) => ({ ...l, home: { ...l.home, ...patch } }))
 
   const updateFolder = (id: string, patch: Partial<Folder>) =>
     update((l) => ({ ...l, folders: l.folders.map((f) => (f.id === id ? { ...f, ...patch } : f)) }))
@@ -127,6 +131,7 @@ export function App() {
     update((l) => {
       const parent = l.folders.find((f) => f.id === id)?.parentId ?? null
       return {
+        ...l,
         folders: l.folders.filter((f) => f.id !== id).map((f) => (f.parentId === id ? { ...f, parentId: parent } : f)),
         notebooks: l.notebooks.map((n) => (n.folderId === id ? { ...n, folderId: parent } : n)),
       }
@@ -180,6 +185,7 @@ export function App() {
             onUpdateFolder={updateFolder}
             onDeleteNotebook={(id) => void deleteNotebook(id)}
             onDeleteFolder={deleteFolder}
+            onUpdateHome={updateHome}
           />
         </div>
         {openMetas.map((m) => (
@@ -187,6 +193,7 @@ export function App() {
         ))}
       </div>
       <UpdateToast />
+      <WhatsNew />
     </div>
   )
 }

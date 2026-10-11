@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Download, RefreshCw, X } from 'lucide-react'
+import { Download, PartyPopper, RefreshCw, X } from 'lucide-react'
 import type { UpdateStatus } from './storage'
+import { CHANGELOG } from './changelog'
 
 // Estado compartido de las actualizaciones (lo emite la app de escritorio).
 let current: UpdateStatus | null = null
@@ -8,8 +9,9 @@ const listeners = new Set<(u: UpdateStatus | null) => void>()
 
 if (window.trazo) {
   window.trazo.onUpdate((u) => {
-    current = u
-    listeners.forEach((fn) => fn(u))
+    // El progreso de descarga no repite la versión: se conserva la que ya se sabía.
+    current = { ...u, version: u.version ?? current?.version }
+    listeners.forEach((fn) => fn(current))
   })
 }
 
@@ -28,22 +30,93 @@ export function useAppVersion() {
   return version
 }
 
-/** Aviso abajo a la derecha cuando hay una versión nueva descargada. */
+/** Las notas de la versión llegan de GitHub como HTML o Markdown: se dejan solo las viñetas. */
+function noteLines(notes?: string): string[] {
+  if (!notes) return []
+  const text = notes
+    .replace(/<li>/gi, '\n- ')
+    .replace(/<br\s*\/?>|<\/p>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+  return text
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l.startsWith('- ') || l.startsWith('* '))
+    .map((l) => l.slice(2))
+    .slice(0, 5)
+}
+
+/** Avisos de actualización: progreso de descarga y tarjeta cuando está lista. */
 export function UpdateToast() {
   const status = useUpdateStatus()
-  const [hidden, setHidden] = useState<string | null>(null)
-  if (!status || status.state !== 'ready' || hidden === status.version) return null
-  return (
-    <div className="update-toast">
-      <Download size={18} />
-      <div>
-        <strong>Nueva versión lista{status.version ? ` (${status.version})` : ''}</strong>
-        <span>Se instala al reiniciar. Tus cuadernos no se tocan.</span>
+  const [dismissed, setDismissed] = useState<string | null>(null)
+  if (!status || dismissed === `${status.state}-${status.version}`) return null
+
+  if (status.state === 'downloading') {
+    return (
+      <div className="update-pill">
+        <Download size={15} />
+        <span>Descargando Trazo {status.version ?? ''}…</span>
+        <div className="update-progress"><span style={{ width: `${status.percent ?? 5}%` }} /></div>
       </div>
-      <button className="btn primary" onClick={() => window.trazo?.installUpdate()}>
-        <RefreshCw size={15} /> Reiniciar
-      </button>
-      <button className="icon-btn small" onClick={() => setHidden(status.version ?? '')} title="Más tarde"><X size={15} /></button>
+    )
+  }
+
+  if (status.state !== 'ready') return null
+  const lines = noteLines(status.notes)
+  return (
+    <div className="update-card">
+      <button className="icon-btn small update-close" onClick={() => setDismissed(`ready-${status.version}`)} title="Después"><X size={15} /></button>
+      <div className="update-head">
+        <img src="./icon.png" alt="" />
+        <div>
+          <strong>Trazo {status.version} está lista</strong>
+          <span>Se instala al reiniciar. Tus cuadernos no se tocan.</span>
+        </div>
+      </div>
+      {lines.length > 0 && (
+        <ul className="update-notes">
+          {lines.map((l) => <li key={l}>{l}</li>)}
+        </ul>
+      )}
+      <div className="update-actions">
+        <button className="btn ghost" onClick={() => setDismissed(`ready-${status.version}`)}>Después</button>
+        <button className="btn primary" onClick={() => window.trazo?.installUpdate()}>
+          <RefreshCw size={15} /> Reiniciar ahora
+        </button>
+      </div>
+    </div>
+  )
+}
+
+const SEEN_KEY = 'trazo.lastVersion'
+
+/** La primera vez que se abre una versión nueva, muestra qué trae. */
+export function WhatsNew() {
+  const version = useAppVersion()
+  const [show, setShow] = useState(false)
+  useEffect(() => {
+    if (!version) return
+    let previous: string | null = null
+    try {
+      previous = localStorage.getItem(SEEN_KEY)
+      localStorage.setItem(SEEN_KEY, version)
+    } catch { /* sin almacenamiento */ }
+    // En la primera instalación no hay "antes": no se muestra nada.
+    if (previous && previous !== version && CHANGELOG[version]) setShow(true)
+  }, [version])
+  if (!show || !version) return null
+  return (
+    <div className="modal-backdrop" onPointerDown={() => setShow(false)}>
+      <div className="whats-new" onPointerDown={(e) => e.stopPropagation()}>
+        <div className="whats-new-badge"><PartyPopper size={22} /></div>
+        <h2>¡Trazo se actualizó a la versión {version}!</h2>
+        <p>Esto es lo nuevo:</p>
+        <ul>
+          {CHANGELOG[version].map((l) => <li key={l}>{l}</li>)}
+        </ul>
+        <button className="btn primary" onClick={() => setShow(false)}>¡Genial!</button>
+      </div>
     </div>
   )
 }

@@ -52,11 +52,17 @@ function setupUpdates(win) {
   autoUpdater.on('checking-for-update', () => send({ state: 'checking' }))
   autoUpdater.on('update-available', (info) => send({ state: 'downloading', version: info.version }))
   autoUpdater.on('download-progress', (p) => send({ state: 'downloading', percent: Math.round(p.percent) }))
-  autoUpdater.on('update-downloaded', (info) => send({ state: 'ready', version: info.version }))
+  autoUpdater.on('update-downloaded', (info) => {
+    const notes = Array.isArray(info.releaseNotes) ? info.releaseNotes.map((n) => n.note).join('\n') : info.releaseNotes
+    send({ state: 'ready', version: info.version, notes: notes ?? undefined })
+  })
   autoUpdater.on('update-not-available', () => send({ state: 'latest' }))
   // Sin internet o sin versiones publicadas: la app sigue funcionando igual.
   autoUpdater.on('error', (err) => send({ state: 'error', message: String(err?.message ?? err) }))
-  setTimeout(() => autoUpdater.checkForUpdates().catch(() => {}), 4000)
+  // Al abrir y luego cada 3 horas, por si la app se queda abierta mucho tiempo.
+  const check = () => autoUpdater.checkForUpdates().catch(() => {})
+  setTimeout(check, 4000)
+  setInterval(check, 3 * 60 * 60 * 1000)
 }
 
 function createWindow() {
