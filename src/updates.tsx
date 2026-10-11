@@ -54,5 +54,12 @@ export function updateLabel(s: UpdateStatus | null): string {
   if (s.state === 'downloading') return s.percent !== undefined ? `Descargando actualización… ${s.percent}%` : 'Descargando actualización…'
   if (s.state === 'ready') return `Versión ${s.version ?? 'nueva'} lista: reinicia para instalarla.`
   if (s.state === 'latest') return 'Tienes la versión más reciente.'
-  return 'No se pudo buscar actualizaciones (¿sin internet?).'
+  const msg = s.message ?? ''
+  if (/ENOTFOUND|ENETUNREACH|ECONNREFUSED|ETIMEDOUT|ERR_INTERNET_DISCONNECTED|net::/i.test(msg)) {
+    return 'No se pudo buscar actualizaciones: parece que no hay internet.'
+  }
+  if (/404|Cannot find|No published versions/i.test(msg)) {
+    return 'No se encontraron versiones publicadas en GitHub. Descarga la última versión desde la página de Trazo.'
+  }
+  return 'No se pudo buscar actualizaciones. Inténtalo más tarde.'
 }
