@@ -1,9 +1,11 @@
-# Publica una versión nueva de Trazo en GitHub.
+﻿# Publica una versión nueva de Trazo en GitHub.
 #   1. Sube el número de "version" en package.json (por ejemplo 0.6.0 -> 0.7.0).
 #   2. Ejecuta:  npm run release
 # Las copias instaladas de Trazo verán la actualización y se actualizarán solas.
 
-$ErrorActionPreference = 'Stop'
+# Cada paso se revisa con $LASTEXITCODE. En Windows PowerShell, 'Stop' trataría
+# cualquier aviso de gh o npm (como "release not found") como un error fatal.
+$ErrorActionPreference = 'Continue'
 Set-Location (Join-Path $PSScriptRoot '..')
 
 $pkg = Get-Content package.json -Raw | ConvertFrom-Json
