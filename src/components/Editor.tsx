@@ -27,11 +27,19 @@ import { Popover } from './Popover'
 import { SettingsDialog } from './SettingsDialog'
 import { StickerPicker, pushRecent } from './StickerPicker'
 import { PageMenu } from './PageMenu'
+import { SizeControl } from './SizeControl'
 
 const PAGE_GAP = 28
 const PAGES_PAD_TOP = 70
 const MIN_ZOOM = 0.35
 const MAX_ZOOM = 2.6
+// Ctrl + rueda: 5 % por cada clic. Botones y Ctrl +/-: al siguiente múltiplo de 10 %.
+const ZOOM_STEP = 0.05
+const stepZoom = (z: number, dir: 1 | -1) => {
+  const pct = Math.round(z * 100)
+  const next = dir > 0 ? Math.floor(pct / 10) * 10 + 10 : Math.ceil(pct / 10) * 10 - 10
+  return next / 100
+}
 
 const SHAPE_ICONS: Record<ShapeTool, React.ReactNode> = {
   line: <Slash size={18} />,
@@ -81,6 +89,14 @@ const savePref = (key: string, value: string) => {
   try { localStorage.setItem(key, value) } catch { /* sin almacenamiento */ }
 }
 
+const readStyle = (key: string, fallback: ToolStyle): ToolStyle => {
+  try {
+    const v = JSON.parse(pref(key, ''))
+    if (typeof v?.color === 'string' && typeof v?.size === 'number') return v
+  } catch { /* primera vez */ }
+  return fallback
+}
+
 const freshIds = <T extends { id: string }>(list: T[]) => list.map((x) => ({ ...x, id: uid() }))
 
 export function Editor({ meta, active, onMetaChange }: Props) {
@@ -93,8 +109,10 @@ export function Editor({ meta, active, onMetaChange }: Props) {
 
   const [tool, setTool] = useState<Tool>('pen')
   const [penType, setPenType] = useState<PenType>(() => pref('trazo.penType', 'fountain') as PenType)
-  const [pen, setPen] = useState<ToolStyle>({ color: PEN_COLORS[0], size: PEN_SIZES[0] })
-  const [highlighter, setHighlighter] = useState<ToolStyle>({ color: HIGHLIGHTER_COLORS[0], size: HIGHLIGHTER_SIZES[1] })
+  const [pen, setPenState] = useState<ToolStyle>(() => readStyle('trazo.pen', { color: PEN_COLORS[0], size: PEN_SIZES[0] }))
+  const [highlighter, setHighlighterState] = useState<ToolStyle>(() => readStyle('trazo.highlighter', { color: HIGHLIGHTER_COLORS[0], size: HIGHLIGHTER_SIZES[1] }))
+  const setPen = (s: ToolStyle) => { setPenState(s); savePref('trazo.pen', JSON.stringify(s)) }
+  const setHighlighter = (s: ToolStyle) => { setHighlighterState(s); savePref('trazo.highlighter', JSON.stringify(s)) }
   const [shapeKind, setShapeKind] = useState<ShapeTool>('rect')
   const [shapeFill, setShapeFill] = useState(false)
   // null = la manita (mover y seleccionar). Al elegir una figura se dibuja una vez y se vuelve a la manita.
@@ -188,10 +206,17 @@ export function Editor({ meta, active, onMetaChange }: Props) {
   }
 
   // ---- Historial (deshacer / rehacer) ----
-  const setPages = (pages: Page[], record = true) => {
+  const lastMerge = useRef<{ key: string; at: number } | null>(null)
+  const setPages = (pages: Page[], record = true, mergeKey?: string) => {
     const cur = docRef.current
     if (!cur) return
-    if (record) {
+    const now = Date.now()
+    const merge = mergeKey && lastMerge.current?.key === mergeKey && now - lastMerge.current.at < 1500 && undoStack.current.length
+    lastMerge.current = mergeKey ? { key: mergeKey, at: now } : null
+    if (record && merge) {
+      undoStack.current[undoStack.current.length - 1].after = pages
+      redoStack.current = []
+    } else if (record) {
       undoStack.current.push({ before: cur.pages, after: pages })
       if (undoStack.current.length > 300) undoStack.current.shift()
       redoStack.current = []
@@ -302,7 +327,14 @@ export function Editor({ meta, active, onMetaChange }: Props) {
   const applyPaper = (index: number, patch: PaperPatch, scope: PaperScope) => {
     const cur = docRef.current
     if (!cur) return
-    setPages(cur.pages.map((p, i) => (scope === 'all' || i === index ? { ...p, ...patch } : p)))
+    // Al cambiar el tipo de hoja, el espaciado y el margen vuelven a los del tipo nuevo.
+    const full = 'paper' in patch ? { ...patch, gap: undefined, margin: undefined } : patch
+    const sliding = 'gap' in patch || 'margin' in patch
+    setPages(
+      cur.pages.map((p, i) => (scope === 'all' || i === index ? { ...p, ...full } : p)),
+      true,
+      sliding ? `paper-adjust-${scope}-${index}` : undefined,
+    )
   }
 
   // ---- Imágenes y stickers ----
@@ -474,7 +506,10 @@ export function Editor({ meta, active, onMetaChange }: Props) {
     const onWheel = (e: WheelEvent) => {
       if (!e.ctrlKey) return
       e.preventDefault()
-      zoomAt(zoomRef.current * Math.exp(-e.deltaY * 0.01), e.clientX, e.clientY)
+      const notches = Math.max(-1, Math.min(1, -e.deltaY / 100))
+      const next = zoomRef.current + notches * ZOOM_STEP
+      // Con la rueda del mouse se queda en porcentajes redondos; el touchpad avanza de a poquito.
+      zoomAt(Math.abs(notches) >= 1 ? Math.round(next * 100) / 100 : next, e.clientX, e.clientY)
     }
     el.addEventListener('wheel', onWheel, { passive: false })
     return () => el.removeEventListener('wheel', onWheel)
@@ -521,8 +556,8 @@ export function Editor({ meta, active, onMetaChange }: Props) {
       const k = e.key.toLowerCase()
       if (mod && k === 'z' && !e.shiftKey) { e.preventDefault(); undo() }
       else if (mod && (k === 'y' || (k === 'z' && e.shiftKey))) { e.preventDefault(); redo() }
-      else if (mod && (e.key === '=' || e.key === '+')) { e.preventDefault(); zoomAt(zoomRef.current * 1.15) }
-      else if (mod && e.key === '-') { e.preventDefault(); zoomAt(zoomRef.current / 1.15) }
+      else if (mod && (e.key === '=' || e.key === '+')) { e.preventDefault(); zoomAt(stepZoom(zoomRef.current, 1)) }
+      else if (mod && e.key === '-') { e.preventDefault(); zoomAt(stepZoom(zoomRef.current, -1)) }
       else if (mod && k === 'c' && selection) { e.preventDefault(); copySelection() }
       else if (mod && k === 'x' && selection) { e.preventDefault(); copySelection(); deleteSelection() }
       else if (mod) return
@@ -811,18 +846,16 @@ export function Editor({ meta, active, onMetaChange }: Props) {
                 </>
               )}
               {tool !== 'diagram' && (<>
-              <div className="sizes">
-                {sizes.map((s, i) => (
-                  <button
-                    key={s}
-                    className={`size-btn ${style.size === s ? 'active' : ''}`}
-                    onClick={() => setStyle({ ...style, size: s })}
-                    title={['Fino', 'Medio', 'Grueso'][i]}
-                  >
-                    <span style={{ width: 4 + i * 4, height: 4 + i * 4, background: isHighlighter ? style.color : 'var(--ink)' }} />
-                  </button>
-                ))}
-              </div>
+              <SizeControl
+                presets={sizes}
+                value={style.size}
+                onChange={(size) => setStyle({ ...style, size })}
+                min={isHighlighter ? 6 : 0.6}
+                max={isHighlighter ? 50 : 16}
+                step={isHighlighter ? 1 : 0.2}
+                color={style.color}
+                tool={isHighlighter ? 'highlighter' : 'pen'}
+              />
               <span className="bar-divider" />
               <ColorPicker
                 presets={presets}
@@ -898,9 +931,9 @@ export function Editor({ meta, active, onMetaChange }: Props) {
           </div>
 
           <div className="float-zoom">
-            <button className="icon-btn small" onClick={() => zoomAt(zoom / 1.15)} title="Alejar (Ctrl -)"><Minus size={15} /></button>
+            <button className="icon-btn small" onClick={() => zoomAt(stepZoom(zoom, -1))} title="Alejar (Ctrl -)"><Minus size={15} /></button>
             <button className="zoom-label" onClick={() => zoomAt(1)} title="Restablecer al 100%">{Math.round(zoom * 100)}%</button>
-            <button className="icon-btn small" onClick={() => zoomAt(zoom * 1.15)} title="Acercar (Ctrl +)"><Plus size={15} /></button>
+            <button className="icon-btn small" onClick={() => zoomAt(stepZoom(zoom, 1))} title="Acercar (Ctrl +)"><Plus size={15} /></button>
           </div>
           {pages.length > 0 && <div className="page-indicator">{pageIndex + 1} / {pages.length}</div>}
         </div>

@@ -57,6 +57,9 @@ export function Library(props: Props) {
   const [newMenu, setNewMenu] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [dropping, setDropping] = useState(false)
+  // Arrastrar cuadernos y carpetas para moverlos ('root' = Documentos).
+  const [dragItem, setDragItem] = useState<{ type: 'notebook' | 'folder'; id: string } | null>(null)
+  const [dropTarget, setDropTarget] = useState<string | null>(null)
   const importRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -92,6 +95,52 @@ export function Library(props: Props) {
 
   const current = trail[trail.length - 1]
 
+  /** ¿Se puede soltar lo que se arrastra dentro de esta carpeta? (null = Documentos) */
+  const canDropInto = (target: string | null) => {
+    if (!dragItem) return false
+    if (dragItem.type === 'notebook') return library.notebooks.find((n) => n.id === dragItem.id)?.folderId !== target
+    const folder = library.folders.find((f) => f.id === dragItem.id)
+    if (!folder || folder.parentId === target) return false
+    // Una carpeta no puede ir dentro de sí misma ni de sus subcarpetas.
+    let id = target
+    while (id) {
+      if (id === folder.id) return false
+      id = library.folders.find((f) => f.id === id)?.parentId ?? null
+    }
+    return true
+  }
+
+  const dropProps = (target: string | null) => ({
+    onDragOver: (e: React.DragEvent) => {
+      if (!canDropInto(target)) return
+      e.preventDefault()
+      e.stopPropagation()
+      e.dataTransfer.dropEffect = 'move'
+      setDropTarget(target ?? 'root')
+    },
+    onDragLeave: () => setDropTarget((t) => (t === (target ?? 'root') ? null : t)),
+    onDrop: (e: React.DragEvent) => {
+      if (!dragItem || !canDropInto(target)) return
+      e.preventDefault()
+      e.stopPropagation()
+      if (dragItem.type === 'notebook') props.onUpdateNotebook(dragItem.id, { folderId: target })
+      else props.onUpdateFolder(dragItem.id, { parentId: target })
+      setDragItem(null)
+      setDropTarget(null)
+    },
+  })
+
+  const dragProps = (type: 'notebook' | 'folder', id: string) => ({
+    draggable: true,
+    onDragStart: (e: React.DragEvent) => {
+      e.dataTransfer.effectAllowed = 'move'
+      e.dataTransfer.setData('application/x-trazo', id)
+      setMenu(null)
+      setDragItem({ type, id })
+    },
+    onDragEnd: () => { setDragItem(null); setDropTarget(null) },
+  })
+
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault()
     setDropping(false)
@@ -126,11 +175,23 @@ export function Library(props: Props) {
         <div className="lib-head">
           <div>
             <nav className="crumbs">
-              <button onClick={() => props.onFolderChange(null)} className={!folderId ? 'current' : ''}>Documentos</button>
+              <button
+                onClick={() => props.onFolderChange(null)}
+                className={`${!folderId ? 'current' : ''} ${dropTarget === 'root' ? 'drop-target' : ''}`}
+                {...dropProps(null)}
+              >
+                Documentos
+              </button>
               {trail.map((f) => (
                 <span key={f.id} className="crumb">
                   <ChevronRight size={14} />
-                  <button onClick={() => props.onFolderChange(f.id)} className={f.id === folderId ? 'current' : ''}>{f.name}</button>
+                  <button
+                    onClick={() => props.onFolderChange(f.id)}
+                    className={`${f.id === folderId ? 'current' : ''} ${dropTarget === f.id ? 'drop-target' : ''}`}
+                    {...dropProps(f.id)}
+                  >
+                    {f.name}
+                  </button>
                 </span>
               ))}
             </nav>
@@ -191,7 +252,13 @@ export function Library(props: Props) {
         ) : (
           <div className="grid">
             {folders.map((f) => (
-              <div key={f.id} className="card" onClick={() => { setQuery(''); props.onFolderChange(f.id) }}>
+              <div
+                key={f.id}
+                className={`card ${dropTarget === f.id ? 'drop-target' : ''} ${dragItem?.id === f.id ? 'dragging' : ''}`}
+                onClick={() => { setQuery(''); props.onFolderChange(f.id) }}
+                {...dragProps('folder', f.id)}
+                {...dropProps(f.id)}
+              >
                 <FolderArt color={f.color ?? FOLDER_COLORS[0]} count={countIn(f.id)} />
                 <CardInfo
                   title={f.name}
@@ -207,7 +274,12 @@ export function Library(props: Props) {
               </div>
             ))}
             {notebooks.map((n) => (
-              <div key={n.id} className="card" onClick={() => props.onOpen(n.id)}>
+              <div
+                key={n.id}
+                className={`card ${dragItem?.id === n.id ? 'dragging' : ''}`}
+                onClick={() => props.onOpen(n.id)}
+                {...dragProps('notebook', n.id)}
+              >
                 <Cover color={n.cover} design={n.coverDesign} image={n.coverImage} title={n.title} board={n.size === 'board'} label={n.label} />
                 <CardInfo
                   title={n.title}
@@ -224,6 +296,11 @@ export function Library(props: Props) {
                 />
               </div>
             ))}
+          </div>
+        )}
+        {dragItem && (
+          <div className="drag-hint">
+            Suelta sobre una carpeta para guardarlo ahí{trail.length ? ', o sobre la ruta de arriba (por ejemplo «Documentos») para sacarlo' : ''}.
           </div>
         )}
         {dropping && <div className="drop-hint"><Upload size={28} /> Suelta aquí tus PDF o archivos de Trazo</div>}

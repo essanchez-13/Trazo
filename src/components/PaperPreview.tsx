@@ -1,12 +1,12 @@
 import { useEffect, useRef } from 'react'
 import type { Paper, PaperColor } from '../types'
-import { drawPaper } from '../ink/render'
+import { drawPaper, type PaperOptions } from '../ink/render'
 
 // Muestra la esquina superior izquierda de la hoja con zoom, para que se
 // note la diferencia entre rayado angosto, ancho, cuadrícula fina, etc.
 const VIEW_W = 190
 
-export function PaperPreview({ paper, color }: { paper: Paper; color?: PaperColor }) {
+export function PaperPreview({ paper, color, opts }: { paper: Paper; color?: PaperColor; opts?: PaperOptions }) {
   const ref = useRef<HTMLCanvasElement>(null)
   useEffect(() => {
     const c = ref.current
@@ -18,7 +18,8 @@ export function PaperPreview({ paper, color }: { paper: Paper; color?: PaperColo
     const k = (w * dpr) / VIEW_W
     const ctx = c.getContext('2d')!
     ctx.setTransform(k, 0, 0, k, 0, 0)
-    drawPaper(ctx, paper, color, VIEW_W, (VIEW_W * h) / w)
-  }, [paper, color])
+    // Líneas de al menos ~1 píxel real, para que se vean en la miniatura.
+    drawPaper(ctx, paper, color, VIEW_W, (VIEW_W * h) / w, { ...opts, hairline: 1 / k })
+  }, [paper, color, opts?.gap, opts?.margin])
   return <canvas ref={ref} className="paper-preview" />
 }

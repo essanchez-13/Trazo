@@ -87,6 +87,10 @@ export interface Page {
   links?: DiagramLink[]
   /** Horizontal (se activa al rotar o al cambiar la orientación). */
   landscape?: boolean
+  /** Espaciado propio de líneas, cuadrícula o puntos (si no, el del tipo de hoja). */
+  gap?: number
+  /** Posición del margen rojo; 0 = sin margen (si no, el del tipo de hoja). */
+  margin?: number
   /** Título en el índice del cuaderno. */
   title?: string
   bookmark?: boolean

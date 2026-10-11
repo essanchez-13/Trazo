@@ -137,7 +137,7 @@ export function drawImages(ctx: CanvasRenderingContext2D, images: ImageItem[], o
 }
 
 // Espaciado de cada tipo de hoja.
-const SPECS: Record<Paper, { kind: 'blank' | 'lines' | 'grid' | 'dots' | 'cornell'; gap: number; margin?: boolean }> = {
+export const SPECS: Record<Paper, { kind: 'blank' | 'lines' | 'grid' | 'dots' | 'cornell'; gap: number; margin?: boolean }> = {
   blank: { kind: 'blank', gap: 0 },
   lined: { kind: 'lines', gap: 32, margin: true },
   'lined-narrow': { kind: 'lines', gap: 24, margin: true },
@@ -151,16 +151,37 @@ const SPECS: Record<Paper, { kind: 'blank' | 'lines' | 'grid' | 'dots' | 'cornel
   cornell: { kind: 'cornell', gap: 32 },
 }
 
-export function drawPaper(ctx: CanvasRenderingContext2D, paper: Paper, color: PaperColor | undefined, W: number, H: number) {
+export const DEFAULT_MARGIN = 92
+
+export interface PaperOptions {
+  gap?: number
+  margin?: number
+  /** Para miniaturas: grosor mínimo de línea (en unidades de página) y líneas más marcadas. */
+  hairline?: number
+}
+
+/** Espaciado y margen efectivos: los de la página si se cambiaron, si no los del tipo de hoja. */
+export function paperLayout(paper: Paper, opts: PaperOptions = {}) {
+  const spec = SPECS[paper] ?? SPECS.blank
+  return {
+    kind: spec.kind,
+    gap: opts.gap ?? spec.gap,
+    margin: opts.margin ?? (spec.margin ? DEFAULT_MARGIN : 0),
+  }
+}
+
+export function drawPaper(ctx: CanvasRenderingContext2D, paper: Paper, color: PaperColor | undefined, W: number, H: number, opts: PaperOptions = {}) {
   const info = paperInfo(color)
   const d = info.dark
-  const spec = SPECS[paper] ?? SPECS.blank
-  const g = spec.gap
-  const line = d ? 'rgba(255,255,255,0.1)' : 'rgba(60,100,150,0.17)'
-  const red = d ? 'rgba(255,120,120,0.22)' : 'rgba(220,90,80,0.3)'
+  const spec = paperLayout(paper, opts)
+  const g = Math.max(6, spec.gap)
+  const strong = !!opts.hairline
+  const line = d ? `rgba(255,255,255,${strong ? 0.28 : 0.1})` : `rgba(60,100,150,${strong ? 0.42 : 0.17})`
+  const red = d ? 'rgba(255,120,120,0.4)' : `rgba(220,90,80,${strong ? 0.6 : 0.3})`
+  const lw = (base: number) => Math.max(base, opts.hairline ?? 0)
   ctx.fillStyle = info.bg
   ctx.fillRect(0, 0, W, H)
-  ctx.lineWidth = 1
+  ctx.lineWidth = lw(1)
   const hLines = (x0: number, x1: number, y0: number, y1: number) => {
     ctx.beginPath()
     for (let y = y0; y < y1; y += g) { ctx.moveTo(x0, y + 0.5); ctx.lineTo(x1, y + 0.5) }
@@ -169,20 +190,20 @@ export function drawPaper(ctx: CanvasRenderingContext2D, paper: Paper, color: Pa
   if (spec.kind === 'lines') {
     ctx.strokeStyle = line
     hLines(0, W, 118, H - 30)
-    if (spec.margin) {
+    if (spec.margin > 0) {
       ctx.strokeStyle = red
-      ctx.beginPath(); ctx.moveTo(92.5, 0); ctx.lineTo(92.5, H); ctx.stroke()
+      ctx.beginPath(); ctx.moveTo(spec.margin + 0.5, 0); ctx.lineTo(spec.margin + 0.5, H); ctx.stroke()
     }
   } else if (spec.kind === 'grid') {
-    ctx.strokeStyle = d ? 'rgba(255,255,255,0.07)' : 'rgba(60,90,130,0.1)'
-    ctx.lineWidth = 0.9
+    ctx.strokeStyle = d ? `rgba(255,255,255,${strong ? 0.2 : 0.07})` : `rgba(60,90,130,${strong ? 0.32 : 0.1})`
+    ctx.lineWidth = lw(0.9)
     ctx.beginPath()
     for (let x = g; x < W; x += g) { ctx.moveTo(x + 0.5, 0); ctx.lineTo(x + 0.5, H) }
     for (let y = g; y < H; y += g) { ctx.moveTo(0, y + 0.5); ctx.lineTo(W, y + 0.5) }
     ctx.stroke()
   } else if (spec.kind === 'dots') {
-    ctx.fillStyle = d ? 'rgba(255,255,255,0.22)' : 'rgba(60,75,95,0.28)'
-    const r = g > 30 ? 1.5 : 1.15
+    ctx.fillStyle = d ? `rgba(255,255,255,${strong ? 0.4 : 0.22})` : `rgba(60,75,95,${strong ? 0.55 : 0.28})`
+    const r = Math.max(g > 30 ? 1.5 : 1.15, (opts.hairline ?? 0) * 1.1)
     for (let x = g; x < W; x += g)
       for (let y = g; y < H; y += g) {
         ctx.beginPath()
@@ -195,7 +216,7 @@ export function drawPaper(ctx: CanvasRenderingContext2D, paper: Paper, color: Pa
     ctx.strokeStyle = line
     hLines(cue, W, 118, sum - 10)
     ctx.strokeStyle = d ? 'rgba(255,255,255,0.28)' : 'rgba(60,100,150,0.45)'
-    ctx.lineWidth = 1.5
+    ctx.lineWidth = lw(1.5)
     ctx.beginPath()
     ctx.moveTo(0, 86.5); ctx.lineTo(W, 86.5)
     ctx.moveTo(cue + 0.5, 86); ctx.lineTo(cue + 0.5, sum)
@@ -209,7 +230,7 @@ export function drawPage(ctx: CanvasRenderingContext2D, page: Page, onReady: () 
   const { w, h } = pageSize(page)
   const dark = paperInfo(page.color).dark
   const show = <T extends { id: string }>(list: T[] | undefined) => (hidden?.size ? (list ?? []).filter((x) => !hidden.has(x.id)) : list ?? [])
-  drawPaper(ctx, page.paper, page.color, w, h)
+  drawPaper(ctx, page.paper, page.color, w, h, { gap: page.gap, margin: page.margin })
   drawImages(ctx, show(page.images), onReady)
   const nodes = show(page.nodes)
   drawLinks(ctx, (page.links ?? []).filter((l) => !hidden?.has(l.from) && !hidden?.has(l.to) && !hidden?.has(l.id)), nodes, dark)
