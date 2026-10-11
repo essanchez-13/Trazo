@@ -1,51 +1,67 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
-  <!-- Carita feliz dibujada a mano: el lápiz amarillo está terminando la sonrisa. -->
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#fffdf8"/>
-      <stop offset="1" stop-color="#f3eee4"/>
+    <linearGradient id="bg" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#2d3494"/>
+      <stop offset="0.55" stop-color="#1f2368"/>
+      <stop offset="1" stop-color="#141641"/>
     </linearGradient>
-    <linearGradient id="ink" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#3b6ff6"/>
-      <stop offset="1" stop-color="#2447c9"/>
+    <radialGradient id="glow" cx="0.26" cy="0.16" r="0.8">
+      <stop offset="0" stop-color="#8b97ff" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#8b97ff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ink" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fbf8f1"/>
+      <stop offset="0.7" stop-color="#f8f0de"/>
+      <stop offset="1" stop-color="#ffd978"/>
     </linearGradient>
-    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffd84d"/>
-      <stop offset="0.5" stop-color="#ffc629"/>
-      <stop offset="1" stop-color="#f2a900"/>
+    <linearGradient id="eye" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#efe8da"/>
     </linearGradient>
-    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#1c2a66" flood-opacity="0.16"/>
+    <linearGradient id="nib" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff1bd"/>
+      <stop offset="0.5" stop-color="#f7c348"/>
+      <stop offset="1" stop-color="#c98309"/>
+    </linearGradient>
+    <linearGradient id="barrel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe27a"/>
+      <stop offset="0.45" stop-color="#ffc629"/>
+      <stop offset="1" stop-color="#e79c00"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#05061a" flood-opacity="0.45"/>
     </filter>
   </defs>
 
-  <!-- Fondo: papel cálido -->
-  <rect x="32" y="32" width="960" height="960" rx="224" fill="url(#bg)"/>
-  <rect x="33.5" y="33.5" width="957" height="957" rx="222.5" fill="none" stroke="#e4dccd" stroke-width="3"/>
+  <rect x="32" y="32" width="960" height="960" rx="228" fill="url(#bg)"/>
+  <rect x="32" y="32" width="960" height="960" rx="228" fill="url(#glow)"/>
+  <rect x="34" y="34" width="956" height="956" rx="226" fill="none" stroke="#ffffff" stroke-opacity="0.1" stroke-width="3"/>
 
-  <g transform="translate(-34 6)">
-  <g filter="url(#soft)" stroke-linecap="round" fill="none">
-    <!-- Ojos: trazos cortos, apenas inclinados -->
-    <path d="M388 318 C 382 368, 384 418, 392 468" stroke="url(#ink)" stroke-width="62"/>
-    <path d="M592 310 C 590 362, 594 412, 600 460" stroke="url(#ink)" stroke-width="62"/>
-    <!-- Sonrisa: un solo trazo que termina en la punta del lápiz -->
-    <path d="M262 596 C 318 742, 452 796, 574 770 C 646 755, 700 712, 734 660" stroke="url(#ink)" stroke-width="62"/>
-  </g>
+  <g filter="url(#shadow)">
+    <!-- Ojos -->
+    <rect x="364" y="318" width="54" height="138" rx="27" fill="url(#eye)" transform="rotate(-3 391 387)"/>
+    <rect x="578" y="310" width="54" height="138" rx="27" fill="url(#eye)" transform="rotate(-3 605 379)"/>
 
-  <!-- Lápiz: la punta toca el final de la sonrisa -->
-  <g filter="url(#soft)" transform="translate(734 660) rotate(-58) scale(0.86)">
-    <!-- madera de la punta -->
-    <path d="M0 0 L78 -34 L78 34 Z" fill="#f6d3a6"/>
-    <!-- mina -->
-    <path d="M0 0 L26 -11.3 L26 11.3 Z" fill="#2b2f45"/>
-    <!-- cuerpo -->
-    <rect x="76" y="-36" width="232" height="72" rx="6" fill="url(#body)"/>
-    <rect x="76" y="-12" width="232" height="12" fill="#ffe27a" opacity="0.7"/>
-    <!-- anillo metálico -->
-    <rect x="300" y="-37" width="34" height="74" rx="5" fill="#c9ccd6"/>
-    <rect x="310" y="-37" width="6" height="74" fill="#aeb2bf"/>
-    <!-- borrador -->
-    <rect x="328" y="-36" width="54" height="72" rx="22" fill="#ff8fab"/>
-  </g>
+    <!-- Sonrisa: medialuna de tinta, fina al inicio y firme al llegar a la plumilla -->
+    <path d="M 252 566
+             C 262 560, 272 562, 278 570
+             C 330 700, 470 770, 600 742
+             C 650 731, 690 704, 716 668
+             A 22 22 0 0 1 752 694
+             C 718 752, 660 790, 590 806
+             C 446 838, 300 752, 248 590
+             C 245 580, 246 571, 252 566 Z" fill="url(#ink)"/>
+
+    <!-- Pluma amarilla: la punta dorada termina la sonrisa -->
+    <g transform="translate(734 680) rotate(-54)">
+      <path d="M-4 0 C 26 -16, 64 -36, 110 -44 L 124 -34 L 124 34 L 110 44 C 64 36, 26 16, -4 0 Z" fill="url(#nib)"/>
+      <path d="M4 0 L 78 0" stroke="#7a4a00" stroke-width="4.5" stroke-linecap="round"/>
+      <circle cx="84" cy="0" r="8" fill="#7a4a00"/>
+      <path d="M34 -18 C 58 -28, 84 -34, 106 -37" stroke="#ffffff" stroke-opacity="0.6" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+      <rect x="118" y="-44" width="34" height="88" rx="8" fill="#c98a12"/>
+      <rect x="118" y="-44" width="34" height="20" rx="8" fill="#ffe9a8" opacity=".55"/>
+      <rect x="148" y="-46" width="210" height="92" rx="26" fill="url(#barrel)"/>
+      <rect x="162" y="-36" width="180" height="12" rx="6" fill="#ffffff" opacity="0.35"/>
+    </g>
   </g>
 </svg>

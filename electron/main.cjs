@@ -60,7 +60,7 @@ function setupUpdates(win) {
 }
 
 function createWindow() {
-  const iconFile = app.isPackaged ? path.join(__dirname, '..', 'dist', 'icon.png') : path.join(__dirname, '..', 'public', 'icon.png')
+  const iconFile = app.isPackaged ? path.join(__dirname, '..', 'dist', 'icon.ico') : path.join(__dirname, '..', 'public', 'icon.ico')
   const win = new BrowserWindow({
     width: 1360,
     height: 900,
