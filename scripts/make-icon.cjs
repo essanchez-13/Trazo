@@ -14,16 +14,48 @@ const root = path.join(__dirname, '..')
 
 // ---- Geometría ----
 
-// Curva de la sonrisa (versión chica).
-const SMILE = [[262, 574], [318, 770], [636, 812], [742, 648]]
-const smileEnd = SMILE[3]
-const tangent = Math.atan2(SMILE[3][1] - SMILE[2][1], SMILE[3][0] - SMILE[2][0])
+// ---- Geometría de la sonrisa ----
+// Curva completa de comisura a comisura; se dibuja solo una parte
+// (la pluma todavía la está terminando).
+const SMILE = [[262, 574], [318, 770], [706, 770], [762, 574]]
+const SMILE_END = 0.75
+
+const at = (t) => {
+  const [p0, p1, p2, p3] = SMILE, u = 1 - t
+  return [
+    u * u * u * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t * t * t * p3[0],
+    u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1],
+  ]
+}
+
+/** Trazo de ancho variable (fino al empezar, firme al llegar a la pluma), con puntas redondas. */
+function smilePath() {
+  const n = 64
+  const left = [], right = []
+  for (let i = 0; i <= n; i++) {
+    const t = (i / n) * SMILE_END
+    const p = at(t), q = at(Math.min(1, t + 0.001))
+    const len = Math.hypot(q[0] - p[0], q[1] - p[1]) || 1
+    const nx = -(q[1] - p[1]) / len, ny = (q[0] - p[0]) / len
+    const w = 7 + 23 * Math.sin(Math.min(1, t / 0.45) * Math.PI / 2)
+    left.push([p[0] + nx * w, p[1] + ny * w])
+    right.push([p[0] - nx * w, p[1] - ny * w])
+  }
+  const f = (p) => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`
+  const endW = Math.hypot(left[n][0] - right[n][0], left[n][1] - right[n][1]) / 2
+  return `M ${f(left[0])} ` + left.slice(1).map((p) => `L ${f(p)}`).join(' ') +
+    ` A ${endW.toFixed(1)} ${endW.toFixed(1)} 0 0 0 ${f(right[n])} ` +
+    right.slice(0, -1).reverse().map((p) => `L ${f(p)}`).join(' ') +
+    ` A 7 7 0 0 0 ${f(left[0])} Z`
+}
+
+const PEN_TIP = at(SMILE_END)
+// La pluma baja hacia la derecha, lejos de la boca.
+const PEN_ANGLE = 30
 
 // ---- Versión grande (a partir de 64 px) ----
 
 function fullSvg() {
-  // Nib angle follows the smile at its end.
-  const deg = -54
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
   <defs>
     <linearGradient id="bg" x1="0.1" y1="0" x2="0.9" y2="1">
@@ -67,18 +99,11 @@ function fullSvg() {
     <rect x="364" y="318" width="54" height="138" rx="27" fill="url(#eye)" transform="rotate(-3 391 387)"/>
     <rect x="578" y="310" width="54" height="138" rx="27" fill="url(#eye)" transform="rotate(-3 605 379)"/>
 
-    <!-- Sonrisa: medialuna de tinta, fina al inicio y firme al llegar a la plumilla -->
-    <path d="M 252 566
-             C 262 560, 272 562, 278 570
-             C 330 700, 470 770, 600 742
-             C 650 731, 690 704, 716 668
-             A 22 22 0 0 1 752 694
-             C 718 752, 660 790, 590 806
-             C 446 838, 300 752, 248 590
-             C 245 580, 246 571, 252 566 Z" fill="url(#ink)"/>
+    <!-- Sonrisa a medio dibujar: fina al inicio y firme donde está la pluma -->
+    <path d="${smilePath()}" fill="url(#ink)"/>
 
-    <!-- Pluma amarilla: la punta dorada termina la sonrisa -->
-    <g transform="translate(734 680) rotate(${deg})">
+    <!-- Pluma amarilla: toca la sonrisa desde abajo, terminando de dibujarla -->
+    <g transform="translate(${PEN_TIP[0].toFixed(1)} ${PEN_TIP[1].toFixed(1)}) rotate(${PEN_ANGLE}) scale(0.86)">
       <path d="M-4 0 C 26 -16, 64 -36, 110 -44 L 124 -34 L 124 34 L 110 44 C 64 36, 26 16, -4 0 Z" fill="url(#nib)"/>
       <path d="M4 0 L 78 0" stroke="#7a4a00" stroke-width="4.5" stroke-linecap="round"/>
       <circle cx="84" cy="0" r="8" fill="#7a4a00"/>
@@ -95,7 +120,7 @@ function fullSvg() {
 // ---- Versión chica (16–48 px): menos detalle, trazos más gruesos ----
 
 function smallSvg() {
-  const deg = (tangent * 180) / Math.PI
+  const pts = Array.from({ length: 33 }, (_, i) => at((i / 32) * SMILE_END).map((v) => v.toFixed(1)).join(' ')).join(' L ')
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
   <defs>
     <linearGradient id="bg" x1="0.1" y1="0" x2="0.9" y2="1">
@@ -107,9 +132,9 @@ function smallSvg() {
   <g fill="none" stroke="#11b3a8" stroke-linecap="round">
     <path d="M392 300 L 392 450" stroke-width="112"/>
     <path d="M612 292 L 612 442" stroke-width="112"/>
-    <path d="M${SMILE[0].join(' ')} C ${SMILE[1].join(' ')}, ${SMILE[2].join(' ')}, ${SMILE[3].join(' ')}" stroke-width="112"/>
+    <path d="M ${pts}" stroke-width="112" stroke-linejoin="round"/>
   </g>
-  <g transform="translate(${smileEnd[0]} ${smileEnd[1]}) rotate(${deg.toFixed(2)})">
+  <g transform="translate(${PEN_TIP[0].toFixed(1)} ${PEN_TIP[1].toFixed(1)}) rotate(${PEN_ANGLE})">
     <path d="M-20 0 L 150 -78 L 190 -50 L 190 50 L 150 78 Z" fill="#f5b400"/>
   </g>
 </svg>`
