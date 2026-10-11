@@ -1,0 +1,243 @@
+/* Portadas con diseños, carpetas de color, diagramas, exportar e importar. */
+
+/* ---- Portadas ---- */
+.cover {
+  background-color: var(--cover);
+  background-image: none;
+  overflow: hidden;
+}
+/* Lomo y brillo encima de cualquier diseño. */
+.cover::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; z-index: 1; pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.24) 0, rgba(0, 0, 0, 0.1) 7%, rgba(255, 255, 255, 0.1) 8.5%, transparent 12%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.2), transparent 45%, rgba(0, 0, 0, 0.14));
+}
+.cover-label { z-index: 2; }
+.cover-badge {
+  position: absolute; left: 20%; bottom: 9%; z-index: 2;
+  padding: 3px 8px; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9); color: #2b2f36;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+}
+
+.cover.d-linen {
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.07) 0 1px, transparent 1px 3px);
+}
+.cover.d-band::after {
+  content: ''; position: absolute; top: 0; bottom: 0; right: 13%; width: 7%; z-index: 3;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.3) 45%, rgba(255, 255, 255, 0.15) 55%, rgba(0, 0, 0, 0.4));
+  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.25);
+}
+.cover.d-dots {
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0.3) 20%, transparent 22%),
+    radial-gradient(rgba(255, 255, 255, 0.3) 20%, transparent 22%);
+  background-size: 26px 26px;
+  background-position: 0 0, 13px 13px;
+}
+.cover.d-stripes {
+  background-image: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0 10px, transparent 10px 24px);
+}
+.cover.d-waves {
+  background-image:
+    radial-gradient(circle at 50% 100%, transparent 38%, rgba(255, 255, 255, 0.2) 39% 46%, transparent 47%),
+    radial-gradient(circle at 50% 100%, transparent 38%, rgba(0, 0, 0, 0.1) 39% 46%, transparent 47%);
+  background-size: 44px 22px;
+  background-position: 0 0, 22px 11px;
+}
+.cover.d-geo {
+  background-image: conic-gradient(from 45deg, rgba(255, 255, 255, 0.16) 25%, transparent 0 50%, rgba(0, 0, 0, 0.12) 0 75%, transparent 0);
+  background-size: 38px 38px;
+}
+.cover.d-aurora {
+  background-image:
+    radial-gradient(at 18% 22%, rgba(255, 128, 200, 0.6), transparent 52%),
+    radial-gradient(at 82% 30%, rgba(120, 205, 255, 0.6), transparent 52%),
+    radial-gradient(at 50% 92%, rgba(255, 228, 120, 0.55), transparent 58%);
+}
+.cover.d-terrazzo {
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.55) 0 3px, transparent 4px),
+    radial-gradient(circle at 70% 20%, rgba(255, 200, 120, 0.7) 0 4px, transparent 5px),
+    radial-gradient(circle at 45% 70%, rgba(255, 140, 160, 0.6) 0 3px, transparent 4px),
+    radial-gradient(circle at 85% 75%, rgba(255, 255, 255, 0.5) 0 2px, transparent 3px),
+    radial-gradient(circle at 10% 85%, rgba(120, 200, 180, 0.7) 0 4px, transparent 5px);
+  background-size: 64px 72px;
+}
+.cover.d-stars {
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.28)),
+    radial-gradient(1.6px 1.6px at 12px 18px, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 48px 40px, #fff, transparent),
+    radial-gradient(2px 2px at 30px 70px, #ffe8a3, transparent),
+    radial-gradient(1.2px 1.2px at 70px 12px, #fff, transparent),
+    radial-gradient(1.6px 1.6px at 64px 62px, #fff, transparent);
+  background-size: 100% 100%, 84px 84px, 84px 84px, 84px 84px, 84px 84px, 84px 84px;
+}
+.cover.d-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+.cover.d-kraft {
+  background-color: #c9a47a;
+  background-image:
+    radial-gradient(rgba(90, 60, 30, 0.22) 1px, transparent 1.6px),
+    radial-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1.6px);
+  background-size: 9px 9px, 11px 11px;
+  background-position: 0 0, 4px 5px;
+}
+.cover.d-kraft .cover-label { border-left: 7px solid var(--cover); }
+.cover.has-image {
+  background-image: var(--img) !important;
+  background-size: cover !important;
+  background-position: center !important;
+}
+
+/* ---- Diálogo de cuaderno ---- */
+.modal:has(.nb-dialog) { width: min(760px, calc(100vw - 32px)); }
+.nb-dialog { grid-template-columns: 150px 1fr; }
+.nb-preview { position: sticky; top: 0; }
+.nb-preview .cover { width: 150px; }
+.design-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.design-option { border-radius: 7px; transition: transform 0.12s; }
+.design-option .cover { width: 100%; box-shadow: var(--shadow-sm); border-radius: 3px 6px 6px 3px; }
+.design-option:hover { transform: translateY(-2px); }
+.design-option.active .cover { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.cover-image-row { display: flex; gap: 8px; }
+.cover-image-row .btn { height: 34px; font-size: 13px; }
+.btn:disabled { opacity: 0.5; cursor: default; }
+
+.paper-options { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
+.paper-option span { font-size: 11px; text-align: center; line-height: 1.2; }
+canvas.paper-preview { display: block; width: 100%; height: auto; aspect-ratio: 3 / 4; filter: contrast(1.35); }
+.paper-panel { width: 340px; }
+.paper-panel .paper-options { grid-template-columns: repeat(4, 1fr); max-height: 290px; overflow-y: auto; padding: 3px; }
+.paper-panel .segmented + .pop-label { margin-top: 14px; }
+
+/* ---- Carpetas ---- */
+.folder-art { background: none; box-shadow: none; aspect-ratio: 3 / 4; align-items: flex-end; padding: 0 2px 8%; }
+.folder-art svg { fill: initial; }
+.folder-svg { width: 100%; height: auto; filter: drop-shadow(0 6px 12px rgba(20, 22, 26, 0.14)); transition: transform 0.2s ease; }
+.card:hover .folder-art { transform: none; box-shadow: none; }
+.card:hover .folder-svg { transform: translateY(-3px); }
+.folder-dialog { display: grid; grid-template-columns: 120px 1fr; gap: 24px; align-items: center; }
+.folder-preview .folder-art { aspect-ratio: auto; padding: 0; }
+.custom-color {
+  position: relative; overflow: hidden; cursor: pointer;
+  background: conic-gradient(#f5576c, #f7b733, #4cd964, #34aadc, #5856d6, #f5576c);
+}
+.custom-color input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.move-dot { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+
+/* ---- Nuevo / importar ---- */
+.new-wrap { margin-top: 0; }
+.new-menu { top: 44px; min-width: 250px; }
+.new-menu button { gap: 12px; padding: 10px 12px; }
+.new-menu span { display: flex; flex-direction: column; font-weight: 600; }
+.new-menu small, .menu-item small { font-weight: 400; font-size: 12px; color: var(--muted); margin-top: 1px; display: block; }
+.empty-hint { font-size: 12.5px; color: var(--faint); }
+.lib-main { position: relative; }
+.lib-main.dropping::after {
+  content: ''; position: absolute; inset: 12px; border-radius: 18px;
+  border: 2px dashed var(--accent); background: var(--accent-soft); pointer-events: none;
+}
+.drop-hint {
+  position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%);
+  display: flex; align-items: center; gap: 12px; padding: 16px 22px; border-radius: 14px;
+  background: var(--surface); box-shadow: var(--shadow-lg); color: var(--accent); font-weight: 600; pointer-events: none; z-index: 5;
+}
+.busy-toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 200;
+  display: flex; align-items: center; gap: 10px; padding: 10px 18px; border-radius: 999px;
+  background: var(--primary-bg); color: var(--primary-fg); font-size: 13.5px; font-weight: 550; box-shadow: var(--shadow-lg);
+}
+.spinner {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid currentColor; border-right-color: transparent;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.export-pop { width: 290px; padding: 6px; }
+.export-pop .menu-item span { display: flex; flex-direction: column; font-weight: 550; }
+.export-status { margin: 6px 10px 12px; font-size: 13.5px; color: var(--muted); }
+
+/* ---- Diagramas ---- */
+.cursor-diagram { cursor: crosshair; }
+.cursor-diagram-hand { cursor: grab; }
+.cursor-diagram-hand:active { cursor: grabbing; }
+.selection-bar { box-shadow: 0 4px 14px rgba(20, 22, 26, 0.14), var(--ring); }
+.opt-hint { font-size: 12px; color: var(--muted); padding: 0 6px; white-space: nowrap; }
+.node-editor {
+  position: absolute; z-index: 15;
+  resize: none; border: 0; outline: 0; background: transparent;
+  text-align: center; font-weight: 500; overflow: hidden;
+  box-shadow: 0 0 0 2px var(--accent); border-radius: 6px;
+}
+.node-editor::placeholder { color: rgba(120, 125, 135, 0.7); }
+.sel-swatch.none {
+  background: #fff linear-gradient(135deg, transparent 45%, #e03131 45% 55%, transparent 55%);
+}
+.sel-swatch.ring { background: transparent; box-shadow: inset 0 0 0 3px var(--c); }
+.sel-btn.on { background: var(--accent-soft); color: var(--accent); }
+.sel-btn.text-btn { width: auto; padding: 0 8px; font-size: 13px; font-weight: 650; }
+
+/* ---- Etiqueta del título en la portada ---- */
+.cover { container-type: inline-size; }
+.cover-label {
+  left: 57%; right: auto; top: 24%;
+  transform: translate(-50%, -50%);
+  width: 66%;
+  font-size: 7.4cqw;
+  padding: 0.55em 0.75em;
+  touch-action: none;
+}
+.cover-label.size-s { width: 52%; font-size: 6.2cqw; }
+.cover-label.size-l { width: 80%; font-size: 9.6cqw; }
+.cover-label.glass {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  backdrop-filter: blur(8px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35), 0 2px 8px rgba(0, 0, 0, 0.15);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+.cover-label.movable { cursor: grab; outline: 2px dashed transparent; outline-offset: 3px; transition: outline-color 0.15s; }
+.cover-label.movable:hover { outline-color: rgba(255, 255, 255, 0.8); }
+.cover-label.movable:active { cursor: grabbing; }
+.preview-hint { margin: 8px 0 0 !important; font-size: 11.5px !important; color: var(--faint) !important; text-align: center; }
+.label-swatch.glass { background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(180, 200, 230, 0.5)); box-shadow: inset 0 0 0 1px var(--line); }
+.label-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.label-controls .segmented { flex: 0 0 auto; }
+.small-btn { height: 30px !important; font-size: 12.5px !important; padding: 0 10px !important; }
+.toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-2); }
+.toggle-track { width: 34px; height: 20px; border-radius: 999px; background: var(--line); position: relative; transition: background 0.15s; }
+.toggle-thumb { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); transition: transform 0.15s; }
+.toggle.on .toggle-track { background: var(--accent); }
+.toggle.on .toggle-thumb { transform: translateX(14px); }
+
+/* ---- Ícono de la app y actualizaciones ---- */
+.brand-icon { width: 24px; height: 24px; border-radius: 6px; }
+.about-row { display: flex; align-items: center; gap: 12px; }
+.about-row img { width: 40px; height: 40px; }
+.about-row > div { flex: 1; min-width: 0; }
+.about-row strong { font-size: 14px; }
+.about-row .field-hint { margin: 2px 0 0 !important; }
+.update-toast {
+  position: fixed; right: 20px; bottom: 20px; z-index: 300;
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 12px 12px 16px; border-radius: 14px;
+  background: var(--surface); color: var(--ink);
+  box-shadow: var(--shadow-lg), var(--ring);
+  animation: pop 0.2s ease-out;
+}
+.update-toast > svg { color: var(--accent); flex: none; }
+.update-toast div { display: flex; flex-direction: column; font-size: 13px; }
+.update-toast span { color: var(--muted); font-size: 12px; }
+.update-toast .btn { height: 32px; }
+.cover-badge.top { bottom: auto; top: 9%; }
+.label-controls .segmented button { padding: 0 12px; flex: none; }
