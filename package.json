@@ -43,6 +43,11 @@
         "repo": "trazo-releases",
         "releaseType": "release"
       }
+    ],
+    "electronLanguages": [
+      "es",
+      "es-419",
+      "en-US"
     ]
   },
   "dependencies": {
