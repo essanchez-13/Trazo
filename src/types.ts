@@ -164,8 +164,15 @@ export interface Settings {
   pressure: number
   /** 0 = el trazo sigue exacto al lápiz, 1 = se suaviza mucho. */
   stabilization: number
+  /** "Mis colores" (guardados, fuera de la barra). */
   penColors: string[]
   highlighterColors: string[]
+  /** Colores de la barra, en el orden elegido. */
+  penPalette: string[]
+  highlighterPalette: string[]
+  /** Grosores guardados (botones rápidos de la barra). */
+  penSizes: number[]
+  highlighterSizes: number[]
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -175,6 +182,10 @@ export const DEFAULT_SETTINGS: Settings = {
   stabilization: 0.2,
   penColors: [],
   highlighterColors: [],
+  penPalette: ['#1c1f24', '#1d3f8f', '#2f6fe4', '#d33f37', '#23875a', '#8a4fd8'],
+  highlighterPalette: ['#ffe066', '#a6ec9a', '#ffadd2', '#a5d8ff', '#ffc078'],
+  penSizes: [2.6, 4, 6.5],
+  highlighterSizes: [14, 20, 28],
 }
 
 export const thinningFor = (pressure: number) => 0.08 + pressure * 0.6

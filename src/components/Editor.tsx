@@ -111,7 +111,29 @@ export function Editor({ meta, active, onMetaChange }: Props) {
   const [penType, setPenType] = useState<PenType>(() => pref('trazo.penType', 'fountain') as PenType)
   const [pen, setPenState] = useState<ToolStyle>(() => readStyle('trazo.pen', { color: PEN_COLORS[0], size: PEN_SIZES[0] }))
   const [highlighter, setHighlighterState] = useState<ToolStyle>(() => readStyle('trazo.highlighter', { color: HIGHLIGHTER_COLORS[0], size: HIGHLIGHTER_SIZES[1] }))
-  const setPen = (s: ToolStyle) => { setPenState(s); savePref('trazo.pen', JSON.stringify(s)) }
+  // Cada tipo de pluma recuerda su propio grosor (la estilográfica en 0.8, el bolígrafo en 2…).
+  const [penTypeSizes, setPenTypeSizes] = useState<Partial<Record<PenType, number>>>(() => {
+    try { return JSON.parse(pref('trazo.penTypeSizes', '{}')) } catch { return {} }
+  })
+  const setPen = (s: ToolStyle) => {
+    setPenState(s)
+    savePref('trazo.pen', JSON.stringify(s))
+    if (s.size !== penTypeSizes[penType]) {
+      const next = { ...penTypeSizes, [penType]: s.size }
+      setPenTypeSizes(next)
+      savePref('trazo.penTypeSizes', JSON.stringify(next))
+    }
+  }
+  const switchPenType = (t: PenType) => {
+    const remembered = { ...penTypeSizes, [penType]: pen.size }
+    setPenTypeSizes(remembered)
+    savePref('trazo.penTypeSizes', JSON.stringify(remembered))
+    setPenType(t)
+    savePref('trazo.penType', t)
+    const size = remembered[t] ?? pen.size
+    setPenState({ ...pen, size })
+    savePref('trazo.pen', JSON.stringify({ ...pen, size }))
+  }
   const setHighlighter = (s: ToolStyle) => { setHighlighterState(s); savePref('trazo.highlighter', JSON.stringify(s)) }
   const [shapeKind, setShapeKind] = useState<ShapeTool>('rect')
   const [shapeFill, setShapeFill] = useState(false)
@@ -620,9 +642,9 @@ export function Editor({ meta, active, onMetaChange }: Props) {
   const isHighlighter = tool === 'highlighter'
   const style = isHighlighter ? highlighter : pen
   const setStyle = isHighlighter ? setHighlighter : setPen
-  const presets = isHighlighter ? HIGHLIGHTER_COLORS : PEN_COLORS
+  const palette = isHighlighter ? settings.highlighterPalette : settings.penPalette
   const custom = isHighlighter ? settings.highlighterColors : settings.penColors
-  const sizes = isHighlighter ? HIGHLIGHTER_SIZES : PEN_SIZES
+  const savedSizes = isHighlighter ? settings.highlighterSizes : settings.penSizes
   const showOptions = tool === 'pen' || tool === 'highlighter' || tool === 'shape' || tool === 'diagram'
   const thinning = thinningFor(settings.pressure)
   const streamline = streamlineFor(settings.stabilization)
@@ -783,7 +805,7 @@ export function Editor({ meta, active, onMetaChange }: Props) {
                     <button
                       key={t.id}
                       className={`opt-btn ${penType === t.id ? 'active' : ''}`}
-                      onClick={() => { setPenType(t.id); savePref('trazo.penType', t.id) }}
+                      onClick={() => switchPenType(t.id)}
                       title={t.label}
                     >
                       {PEN_ICONS[t.id]}
@@ -847,22 +869,25 @@ export function Editor({ meta, active, onMetaChange }: Props) {
               )}
               {tool !== 'diagram' && (<>
               <SizeControl
-                presets={sizes}
+                saved={savedSizes}
+                onSavedChange={(list) => updateSettings(isHighlighter ? { highlighterSizes: list } : { penSizes: list })}
                 value={style.size}
                 onChange={(size) => setStyle({ ...style, size })}
-                min={isHighlighter ? 6 : 0.6}
-                max={isHighlighter ? 50 : 16}
-                step={isHighlighter ? 1 : 0.2}
+                min={isHighlighter ? 4 : 0.3}
+                max={isHighlighter ? 60 : 20}
+                step={isHighlighter ? 1 : 0.1}
                 color={style.color}
                 tool={isHighlighter ? 'highlighter' : 'pen'}
               />
               <span className="bar-divider" />
               <ColorPicker
-                presets={presets}
+                palette={palette}
                 custom={custom}
                 value={style.color}
                 onChange={(c) => setStyle({ ...style, color: c })}
-                onCustomChange={(list) => updateSettings(isHighlighter ? { highlighterColors: list } : { penColors: list })}
+                onListsChange={(bar, mine) => updateSettings(isHighlighter
+                  ? { highlighterPalette: bar, highlighterColors: mine }
+                  : { penPalette: bar, penColors: mine })}
               />
               </>)}
             </div>

@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ChevronDown, Minus, Plus } from 'lucide-react'
+import { BookmarkPlus, ChevronDown, Minus, Plus, X } from 'lucide-react'
 import type { Stroke } from '../types'
 import { drawStroke } from '../ink/render'
 import { Popover } from './Popover'
+import { moveItem, useSortable } from './useSortable'
 
 interface Props {
-  presets: number[]
+  /** Grosores guardados: se ven como botones rápidos en la barra. */
+  saved: number[]
+  onSavedChange: (sizes: number[]) => void
   value: number
   onChange: (size: number) => void
   min: number
@@ -15,25 +18,34 @@ interface Props {
   tool: Stroke['tool']
 }
 
-const round = (n: number, step: number) => Math.round(n / step) * step
+const same = (a: number, b: number) => Math.abs(a - b) < 0.001
+const fmt = (n: number) => String(Number(n.toFixed(2)))
 
-/** Tres grosores rápidos más un ajuste libre con vista previa. */
-export function SizeControl({ presets, value, onChange, min, max, step, color, tool }: Props) {
+/** Grosores guardados (reordenables) más un ajuste libre: deslizador o número escrito. */
+export function SizeControl({ saved, onSavedChange, value, onChange, min, max, step, color, tool }: Props) {
   const [open, setOpen] = useState(false)
   const close = useCallback(() => setOpen(false), [])
-  const set = (n: number) => onChange(Math.min(max, Math.max(min, Number(round(n, step).toFixed(1)))))
-  const isPreset = presets.some((p) => Math.abs(p - value) < 0.01)
+  const clamp = (n: number) => Math.min(max, Math.max(min, Math.round(n * 100) / 100))
+  const isSaved = saved.some((s) => same(s, value))
+  const sort = useSortable<'sizes'>((from, to) => onSavedChange(moveItem({ sizes: saved }, from, to).sizes))
+
+  // Punto proporcional al grosor, para reconocerlos de un vistazo.
+  const dot = (s: number) => {
+    const px = tool === 'highlighter' ? Math.min(16, 3 + s / 3.2) : Math.min(16, 2.5 + s * 1.4)
+    return <span style={{ width: px, height: px, background: tool === 'highlighter' ? color : 'var(--ink)' }} />
+  }
 
   return (
     <div className="sizes">
-      {presets.map((s, i) => (
+      {saved.map((s, i) => (
         <button
           key={s}
-          className={`size-btn ${Math.abs(value - s) < 0.01 ? 'active' : ''}`}
+          {...sort.itemProps('sizes', i)}
+          className={`size-btn ${same(value, s) ? 'active' : ''} ${sort.cls('sizes', i)}`}
           onClick={() => onChange(s)}
-          title={['Fino', 'Medio', 'Grueso'][i]}
+          title={`Grosor ${fmt(s)}`}
         >
-          <span style={{ width: 4 + i * 4, height: 4 + i * 4, background: tool === 'highlighter' ? color : 'var(--ink)' }} />
+          {dot(s)}
         </button>
       ))}
       <Popover
@@ -41,8 +53,8 @@ export function SizeControl({ presets, value, onChange, min, max, step, color, t
         onClose={close}
         className="size-pop"
         trigger={
-          <button className={`size-custom ${!isPreset ? 'active' : ''} ${open ? 'open' : ''}`} onClick={() => setOpen((v) => !v)} title="Ajustar grosor">
-            {value.toFixed(1).replace(/\.0$/, '')}
+          <button className={`size-custom ${!isSaved ? 'active' : ''} ${open ? 'open' : ''}`} onClick={() => setOpen((v) => !v)} title="Ajustar grosor">
+            {fmt(value)}
             <ChevronDown size={13} />
           </button>
         }
@@ -50,7 +62,7 @@ export function SizeControl({ presets, value, onChange, min, max, step, color, t
         <div className="pop-label">Grosor</div>
         <SizePreview size={value} color={color} tool={tool} />
         <div className="size-row">
-          <button className="icon-btn small" onClick={() => set(value - step)} title="Más fino"><Minus size={15} /></button>
+          <button className="icon-btn small" onClick={() => onChange(clamp(value - step))} title="Más fino"><Minus size={15} /></button>
           <input
             className="slider"
             type="range"
@@ -58,17 +70,76 @@ export function SizeControl({ presets, value, onChange, min, max, step, color, t
             max={max}
             step={step}
             value={value}
-            onChange={(e) => set(Number(e.target.value))}
+            onChange={(e) => onChange(clamp(Number(e.target.value)))}
           />
-          <button className="icon-btn small" onClick={() => set(value + step)} title="Más grueso"><Plus size={15} /></button>
+          <button className="icon-btn small" onClick={() => onChange(clamp(value + step))} title="Más grueso"><Plus size={15} /></button>
+          <NumberField value={value} onCommit={(n) => onChange(clamp(n))} />
         </div>
         <div className="slider-labels">
           <span>{min}</span>
-          <strong>{value.toFixed(1).replace(/\.0$/, '')}</strong>
           <span>{max}</span>
         </div>
+
+        <div className="pop-label saved-head">
+          Mis grosores
+          <button className="link-btn" disabled={isSaved} onClick={() => onSavedChange([...saved, value])}>
+            <BookmarkPlus size={13} /> Guardar {fmt(value)}
+          </button>
+        </div>
+        <div className={`saved-sizes sortable-row ${sort.rowCls('sizes', saved.length)}`} {...sort.rowProps('sizes', saved.length)}>
+          {saved.map((s, i) => (
+            <span
+              key={s}
+              {...sort.itemProps('sizes', i)}
+              className={`size-chip ${same(value, s) ? 'active' : ''} ${sort.cls('sizes', i)}`}
+              onClick={() => onChange(s)}
+              title="Usar este grosor · arrastra para ordenar"
+            >
+              {dot(s)}
+              {fmt(s)}
+              {saved.length > 1 && (
+                <button
+                  className="chip-remove"
+                  onClick={(e) => { e.stopPropagation(); onSavedChange(saved.filter((x) => !same(x, s))) }}
+                  title="Quitar"
+                >
+                  <X size={10} strokeWidth={3} />
+                </button>
+              )}
+            </span>
+          ))}
+        </div>
+        <p className="pop-hint">Los grosores guardados aparecen en la barra. Arrástralos para cambiar el orden.</p>
       </Popover>
     </div>
+  )
+}
+
+/** Campo para escribir el grosor (por ejemplo 0.9). Se aplica con Enter o al salir. */
+function NumberField({ value, onCommit }: { value: number; onCommit: (n: number) => void }) {
+  const [text, setText] = useState(fmt(value))
+  const [editing, setEditing] = useState(false)
+  useEffect(() => { if (!editing) setText(fmt(value)) }, [value, editing])
+  const commit = () => {
+    setEditing(false)
+    const n = Number(text.replace(',', '.'))
+    if (Number.isFinite(n) && n > 0) onCommit(n)
+    else setText(fmt(value))
+  }
+  return (
+    <input
+      className="size-number"
+      inputMode="decimal"
+      value={text}
+      onFocus={(e) => { setEditing(true); e.target.select() }}
+      onChange={(e) => setText(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        e.stopPropagation()
+        if (e.key === 'Enter') { commit(); (e.target as HTMLInputElement).blur() }
+        if (e.key === 'Escape') { setText(fmt(value)); setEditing(false); (e.target as HTMLInputElement).blur() }
+      }}
+    />
   )
 }
 
