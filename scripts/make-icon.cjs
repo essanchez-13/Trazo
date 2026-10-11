@@ -1,4 +1,4 @@
-// Genera el ícono de Trazo: una carita feliz escrita con tinta caligráfica,
+// Genera el ícono de Trazo: una carita feliz en trazos turquesa sobre blanco,
 // cuya sonrisa termina en una plumilla dorada.
 //   node scripts/make-icon.cjs
 //
@@ -27,22 +27,21 @@ function fullSvg() {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
   <defs>
     <linearGradient id="bg" x1="0.1" y1="0" x2="0.9" y2="1">
-      <stop offset="0" stop-color="#2d3494"/>
-      <stop offset="0.55" stop-color="#1f2368"/>
-      <stop offset="1" stop-color="#141641"/>
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#eef5f5"/>
     </linearGradient>
     <radialGradient id="glow" cx="0.26" cy="0.16" r="0.8">
-      <stop offset="0" stop-color="#8b97ff" stop-opacity="0.42"/>
-      <stop offset="1" stop-color="#8b97ff" stop-opacity="0"/>
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="ink" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#fbf8f1"/>
-      <stop offset="0.7" stop-color="#f8f0de"/>
-      <stop offset="1" stop-color="#ffd978"/>
+      <stop offset="0" stop-color="#2ad4c4"/>
+      <stop offset="0.75" stop-color="#10b3a8"/>
+      <stop offset="1" stop-color="#0e9f96"/>
     </linearGradient>
     <linearGradient id="eye" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="1" stop-color="#efe8da"/>
+      <stop offset="0" stop-color="#2ad4c4"/>
+      <stop offset="1" stop-color="#10ada3"/>
     </linearGradient>
     <linearGradient id="nib" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#fff1bd"/>
@@ -55,13 +54,13 @@ function fullSvg() {
       <stop offset="1" stop-color="#e79c00"/>
     </linearGradient>
     <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#05061a" flood-opacity="0.45"/>
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#0b5f5a" flood-opacity="0.18"/>
     </filter>
   </defs>
 
   <rect x="32" y="32" width="960" height="960" rx="228" fill="url(#bg)"/>
   <rect x="32" y="32" width="960" height="960" rx="228" fill="url(#glow)"/>
-  <rect x="34" y="34" width="956" height="956" rx="226" fill="none" stroke="#ffffff" stroke-opacity="0.1" stroke-width="3"/>
+  <rect x="34" y="34" width="956" height="956" rx="226" fill="none" stroke="#d5e3e3" stroke-width="3"/>
 
   <g filter="url(#shadow)">
     <!-- Ojos -->
@@ -100,18 +99,18 @@ function smallSvg() {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
   <defs>
     <linearGradient id="bg" x1="0.1" y1="0" x2="0.9" y2="1">
-      <stop offset="0" stop-color="#3038a0"/>
-      <stop offset="1" stop-color="#171a4d"/>
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#eaf3f3"/>
     </linearGradient>
   </defs>
   <rect x="0" y="0" width="1024" height="1024" rx="230" fill="url(#bg)"/>
-  <g fill="none" stroke="#fbf8f1" stroke-linecap="round">
+  <g fill="none" stroke="#11b3a8" stroke-linecap="round">
     <path d="M392 300 L 392 450" stroke-width="112"/>
     <path d="M612 292 L 612 442" stroke-width="112"/>
     <path d="M${SMILE[0].join(' ')} C ${SMILE[1].join(' ')}, ${SMILE[2].join(' ')}, ${SMILE[3].join(' ')}" stroke-width="112"/>
   </g>
   <g transform="translate(${smileEnd[0]} ${smileEnd[1]}) rotate(${deg.toFixed(2)})">
-    <path d="M-20 0 L 150 -78 L 190 -50 L 190 50 L 150 78 Z" fill="#ffc83d"/>
+    <path d="M-20 0 L 150 -78 L 190 -50 L 190 50 L 150 78 Z" fill="#f5b400"/>
   </g>
 </svg>`
 }
