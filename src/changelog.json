@@ -1,4 +1,12 @@
 {
+  "0.9.1": [
+    "Borrador a tu gusto: trazo completo o parcial, tamaños y qué borra (pluma, resaltador, formas, imágenes).",
+    "Fondos con imagen para el inicio y para cada carpeta.",
+    "El inicio puede llamarse como quieras, no solo \"Documentos\".",
+    "Stickers nuevos de antojos: pizza, dona, helado y palomitas.",
+    "Animación de bienvenida al abrir Trazo.",
+    "Las actualizaciones se buscan solas y avisan cuando están listas."
+  ],
   "0.9.0": [
     "Borrador a tu gusto: trazo completo o parcial, tamaños y qué borra (pluma, resaltador, formas, imágenes).",
     "Fondos con imagen para el inicio y para cada carpeta.",

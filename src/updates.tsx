@@ -100,6 +100,9 @@ export function WhatsNew() {
     let previous: string | null = null
     try {
       previous = localStorage.getItem(SEEN_KEY)
+      // Las versiones anteriores a la 0.9 no guardaban la versión; si ya hay preferencias
+      // guardadas, la app ya se había usado: no es una instalación nueva.
+      if (!previous && (localStorage.getItem('trazo.tabs') || localStorage.getItem('trazo.pen'))) previous = 'anterior'
       localStorage.setItem(SEEN_KEY, version)
     } catch { /* sin almacenamiento */ }
     // En la primera instalación no hay "antes": no se muestra nada.
