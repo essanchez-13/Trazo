@@ -86,7 +86,8 @@ function createWindow() {
   win.once('ready-to-show', () => win.show())
   win.webContents.setVisualZoomLevelLimits(1, 1)
   win.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url)
+    // Solo enlaces web: un link pegado no debe poder abrir file:// u otros protocolos.
+    if (/^https?:\/\//i.test(url)) shell.openExternal(url)
     return { action: 'deny' }
   })
   if (process.env.VITE_DEV_SERVER_URL) win.loadURL(process.env.VITE_DEV_SERVER_URL)

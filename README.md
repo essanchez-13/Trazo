@@ -1,33 +1,49 @@
 # Trazo
 
-Cuadernos digitales para escribir a mano en Windows, al estilo de GoodNotes: tinta con presión, carpetas y cuadernos ilimitados, pestañas, stickers, imágenes, índice, pizarra con diagramas, PDFs y portadas personalizables.
+**Handwritten digital notebooks for Windows.** Trazo is a desktop note-taking app built for pen tablets: pressure-sensitive ink, unlimited notebooks and folders, PDF annotation, a whiteboard with diagrams, and automatic updates. I built it as a personal replacement for subscription-based note apps and use it daily for my university classes.
 
-Hecha con Electron + React + TypeScript. Las notas se guardan solo en la computadora (`%APPDATA%\trazo\data`).
+**[⬇ Download for Windows](https://github.com/essanchez-13/trazo-releases/releases/latest/download/Trazo-Setup.exe)** · [Release notes](https://github.com/essanchez-13/trazo-releases/releases)
 
-## Desarrollo
+**Stack:** Electron · React 19 · TypeScript · Vite · HTML Canvas · perfect-freehand · pdf-lib · pdf.js · electron-updater
+
+## Highlights
+
+- **Pressure-sensitive ink engine** (`src/ink/render.ts`). Built on the Pointer Events API: it reads pen pressure and the eraser button, while touch input only scrolls. It offers three pen types (fountain, ballpoint, brush) with their own tapering and thinning, adjustable stabilization, and a highlighter that blends under the ink.
+- **Shape recognition** (`src/ink/shapes.ts`). Hold the pen at the end of a stroke and the freehand path is recognized as a line, triangle, rectangle, polygon or ellipse, then snapped into a clean shape.
+- **Stroke and precise erasers** (`src/ink/erase.ts`). The precise mode densifies the stroke and splits it at the eraser's radius, removing only the ink it touches.
+- **Diagram whiteboard** (`src/ink/diagram.ts`). Nodes with text, plus port-based connectors with elbow, curved or straight routing that follow the nodes when they move.
+- **PDF import and export** (`src/exporter.ts`). Imported PDF pages become locked backgrounds you can write over, and notebooks export to PDF or to a portable `.trazo` file.
+- **Library.** Folders and notebooks are reorderable by drag and drop, with covers, tabs, bookmarks, stickers, images, and 11 paper styles in portrait, landscape and whiteboard formats.
+- **Auto-updates.** `electron-updater` checks a public releases repo, shows an in-app download progress pill, and shows "what's new" notes generated from `src/changelog.json`.
+
+## Engineering notes
+
+- **Local-first and crash-safe.** Notes are JSON files in `%APPDATA%\trazo\data`. Every save writes to a temp file and renames it, so a crash mid-save can't corrupt a notebook.
+- **Locked-down renderer.** The renderer runs with `contextIsolation` and `sandbox` enabled. It can only reach disk through a narrow IPC API whose keys are validated against a strict pattern. External links open only for `http(s)` URLs.
+- **Backward compatible.** New page settings are optional fields, so notebooks created in older versions keep working after every update.
+- **Release pipeline.** `scripts/release.ps1` builds the NSIS installer, generates release notes and publishes them to GitHub Releases. `scripts/make-icon.cjs` renders a multi-resolution `.ico` with a simplified design for small sizes.
+
+## Project structure
+
+```
+electron/          main process: window, atomic file storage, auto-updates
+src/components/    library, editor, page canvas, menus and panels
+src/ink/           ink rendering, shapes, eraser, diagrams
+src/exporter.ts    PDF and .trazo import/export
+scripts/           icon generation and release automation
+```
+
+## Running locally
 
 ```bash
 npm install
-npm run dev      # versión web en el navegador (http://localhost:5173)
-npm run app      # app de escritorio con recarga en vivo
+npm run dev    # web version in the browser (uses IndexedDB)
+npm run app    # desktop app with live reload
+npm run dist   # build the Windows installer into release/
 ```
 
-## Compilar el instalador
+Build the installer from PowerShell; NSIS fails under Git Bash with `spawn UNKNOWN`.
 
-```bash
-npm run build
-npx electron-builder --win --publish never
-```
+---
 
-El instalador queda en `release/`. Desde PowerShell, no desde Git Bash: en Git Bash el paso de NSIS falla con `spawn UNKNOWN`.
-
-## Ícono
-
-El ícono se genera desde `scripts/make-icon.cjs` (`npm run icon`), que crea `build/icon.ico` con versiones para cada tamaño.
-
-## Estructura
-
-- `electron/`: ventana, guardado de archivos y actualizaciones.
-- `src/components/`: biblioteca, editor, página (`PageCanvas`), menús y paneles.
-- `src/ink/`: motor de tinta, hojas, figuras y diagramas.
-- `src/exporter.ts`: exportar e importar PDF y archivos `.trazo`.
+© Esteban Sánchez. The source is published as a portfolio piece. All rights reserved.
