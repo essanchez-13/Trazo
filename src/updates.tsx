@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Download, PartyPopper, RefreshCw, X } from 'lucide-react'
 import type { UpdateStatus } from './storage'
 import { CHANGELOG } from './changelog'
+import { t } from './i18n'
 
 // Estado compartido de las actualizaciones (lo emite la app de escritorio).
 let current: UpdateStatus | null = null
@@ -56,7 +57,7 @@ export function UpdateToast() {
     return (
       <div className="update-pill">
         <Download size={15} />
-        <span>Descargando Trazo {status.version ?? ''}…</span>
+        <span>{t('Descargando Trazo')} {status.version ?? ''}…</span>
         <div className="update-progress"><span style={{ width: `${status.percent ?? 5}%` }} /></div>
       </div>
     )
@@ -66,12 +67,12 @@ export function UpdateToast() {
   const lines = noteLines(status.notes)
   return (
     <div className="update-card">
-      <button className="icon-btn small update-close" onClick={() => setDismissed(`ready-${status.version}`)} title="Después"><X size={15} /></button>
+      <button className="icon-btn small update-close" onClick={() => setDismissed(`ready-${status.version}`)} title={t('Después')}><X size={15} /></button>
       <div className="update-head">
         <img src="./icon.png" alt="" />
         <div>
-          <strong>Trazo {status.version} está lista</strong>
-          <span>Se instala al reiniciar. Tus cuadernos no se tocan.</span>
+          <strong>{t('Trazo {v} está lista', { v: status.version ?? '' })}</strong>
+          <span>{t('Se instala al reiniciar. Tus cuadernos no se tocan.')}</span>
         </div>
       </div>
       {lines.length > 0 && (
@@ -80,9 +81,9 @@ export function UpdateToast() {
         </ul>
       )}
       <div className="update-actions">
-        <button className="btn ghost" onClick={() => setDismissed(`ready-${status.version}`)}>Después</button>
+        <button className="btn ghost" onClick={() => setDismissed(`ready-${status.version}`)}>{t('Después')}</button>
         <button className="btn primary" onClick={() => window.trazo?.installUpdate()}>
-          <RefreshCw size={15} /> Reiniciar ahora
+          <RefreshCw size={15} /> {t('Reiniciar ahora')}
         </button>
       </div>
     </div>
@@ -113,12 +114,12 @@ export function WhatsNew() {
     <div className="modal-backdrop" onPointerDown={() => setShow(false)}>
       <div className="whats-new" onPointerDown={(e) => e.stopPropagation()}>
         <div className="whats-new-badge"><PartyPopper size={22} /></div>
-        <h2>¡Trazo se actualizó a la versión {version}!</h2>
-        <p>Esto es lo nuevo:</p>
+        <h2>{t('¡Trazo se actualizó a la versión')} {version}!</h2>
+        <p>{t('Esto es lo nuevo:')}</p>
         <ul>
           {CHANGELOG[version].map((l) => <li key={l}>{l}</li>)}
         </ul>
-        <button className="btn primary" onClick={() => setShow(false)}>¡Genial!</button>
+        <button className="btn primary" onClick={() => setShow(false)}>{t('¡Genial!')}</button>
       </div>
     </div>
   )
@@ -127,15 +128,15 @@ export function WhatsNew() {
 export function updateLabel(s: UpdateStatus | null): string {
   if (!s) return ''
   if (s.state === 'checking') return 'Buscando actualizaciones…'
-  if (s.state === 'downloading') return s.percent !== undefined ? `Descargando actualización… ${s.percent}%` : 'Descargando actualización…'
-  if (s.state === 'ready') return `Versión ${s.version ?? 'nueva'} lista: reinicia para instalarla.`
-  if (s.state === 'latest') return 'Tienes la versión más reciente.'
+  if (s.state === 'downloading') return s.percent !== undefined ? t('Descargando actualización… {p}%', { p: s.percent }) : t('Descargando actualización…')
+  if (s.state === 'ready') return t('Versión {v} lista: reinicia para instalarla.', { v: s.version ?? t('nueva') })
+  if (s.state === 'latest') return t('Tienes la versión más reciente.')
   const msg = s.message ?? ''
   if (/ENOTFOUND|ENETUNREACH|ECONNREFUSED|ETIMEDOUT|ERR_INTERNET_DISCONNECTED|net::/i.test(msg)) {
-    return 'No se pudo buscar actualizaciones: parece que no hay internet.'
+    return t('No se pudo buscar actualizaciones: parece que no hay internet.')
   }
   if (/404|Cannot find|No published versions/i.test(msg)) {
-    return 'No se encontraron versiones publicadas en GitHub. Descarga la última versión desde la página de Trazo.'
+    return t('No se encontraron versiones publicadas en GitHub. Descarga la última versión desde la página de Trazo.')
   }
-  return 'No se pudo buscar actualizaciones. Inténtalo más tarde.'
+  return t('No se pudo buscar actualizaciones. Inténtalo más tarde.')
 }

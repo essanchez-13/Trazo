@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { ChevronDown, GripVertical, Plus, X } from 'lucide-react'
 import { Popover } from './Popover'
 import { moveItem, useSortable } from './useSortable'
+import { t } from '../i18n'
 
 interface Props {
   /** Colores que se ven en la barra, en el orden elegido. */
@@ -67,32 +68,32 @@ export function ColorPicker({ palette, custom, value, onChange, onListsChange }:
         align="right"
         className="color-pop"
         trigger={
-          <button className={`swatch-more ${open ? 'open' : ''}`} onClick={() => setOpen((v) => !v)} title="Más colores">
+          <button className={`swatch-more ${open ? 'open' : ''}`} onClick={() => setOpen((v) => !v)} title={t('Más colores')}>
             <ChevronDown size={15} />
           </button>
         }
       >
-        <div className="pop-label">En la barra</div>
+        <div className="pop-label">{t('En la barra')}</div>
         <div className={`pop-swatches sortable-row ${sort.rowCls('palette', palette.length)}`} {...sort.rowProps('palette', palette.length)}>
           {palette.map((c, i) => swatch(c, 'palette', i, true))}
         </div>
-        <div className="pop-label">Mis colores</div>
+        <div className="pop-label">{t('Mis colores')}</div>
         <div className={`pop-swatches sortable-row ${sort.rowCls('custom', custom.length)}`} {...sort.rowProps('custom', custom.length)}>
           {custom.map((c, i) => (
             <span key={c} className="custom-swatch">
               {swatch(c, 'custom', i, true)}
-              <button className="swatch-remove" onClick={() => onListsChange(palette, custom.filter((x) => x !== c))} title="Quitar color">
+              <button className="swatch-remove" onClick={() => onListsChange(palette, custom.filter((x) => x !== c))} title={t('Quitar color')}>
                 <X size={10} strokeWidth={3} />
               </button>
             </span>
           ))}
-          <label className="swatch-add" title="Agregar color">
+          <label className="swatch-add" title={t('Agregar color')}>
             <Plus size={15} />
             <input ref={inputRef} type="color" defaultValue={value} />
           </label>
         </div>
         <p className="pop-hint">
-          <GripVertical size={12} /> Arrastra los colores para ordenarlos, o para pasarlos entre la barra y "Mis colores".
+          <GripVertical size={12} /> {t('Arrastra los colores para ordenarlos, o para pasarlos entre la barra y "Mis colores".')}
         </p>
       </Popover>
     </div>

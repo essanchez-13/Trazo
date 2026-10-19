@@ -3,6 +3,7 @@ import { Bookmark, LayoutGrid, ListTree, MoreHorizontal } from 'lucide-react'
 import type { Page } from '../types'
 import { pageSize } from '../types'
 import { drawPage } from '../ink/render'
+import { t } from '../i18n'
 
 const THUMB_W = 132
 
@@ -60,7 +61,7 @@ export function PageSidebar(props: Props) {
               className="icon-btn small"
               onClick={(e) => { e.stopPropagation(); props.onPageMenu(i) }}
               onPointerDown={(e) => e.stopPropagation()}
-              title="Opciones de página"
+              title={t('Opciones de página')}
             >
               <MoreHorizontal size={15} />
             </button>
@@ -73,9 +74,9 @@ export function PageSidebar(props: Props) {
   return (
     <aside className="sidebar">
       <div className="sidebar-tabs">
-        <button className={view === 'pages' ? 'active' : ''} onClick={() => props.onView('pages')} title="Páginas"><LayoutGrid size={16} /></button>
-        <button className={view === 'outline' ? 'active' : ''} onClick={() => props.onView('outline')} title="Índice"><ListTree size={16} /></button>
-        <button className={view === 'bookmarks' ? 'active' : ''} onClick={() => props.onView('bookmarks')} title="Marcadores"><Bookmark size={16} /></button>
+        <button className={view === 'pages' ? 'active' : ''} onClick={() => props.onView('pages')} title={t('Páginas')}><LayoutGrid size={16} /></button>
+        <button className={view === 'outline' ? 'active' : ''} onClick={() => props.onView('outline')} title={t('Índice')}><ListTree size={16} /></button>
+        <button className={view === 'bookmarks' ? 'active' : ''} onClick={() => props.onView('bookmarks')} title={t('Marcadores')}><Bookmark size={16} /></button>
       </div>
 
       {view === 'pages' && thumbList(pages.map((p, i) => ({ p, i })), true)}
@@ -99,7 +100,7 @@ export function PageSidebar(props: Props) {
                     }}
                   />
                 ) : (
-                  <span className="outline-title" onDoubleClick={(e) => { e.stopPropagation(); setEditing(i) }} title="Doble clic para renombrar">
+                  <span className="outline-title" onDoubleClick={(e) => { e.stopPropagation(); setEditing(i) }} title={t('Doble clic para renombrar')}>
                     {p.title}
                   </span>
                 )}
@@ -110,8 +111,8 @@ export function PageSidebar(props: Props) {
         ) : (
           <div className="sidebar-empty">
             <ListTree size={28} strokeWidth={1.5} />
-            <p>El índice está vacío.</p>
-            <span>Usa <b>⋯ → Agregar al índice</b> en una página para ponerle un título, por ejemplo "Tema 3: Congruencias".</span>
+            <p>{t('El índice está vacío.')}</p>
+            <span>{t('Usa')} <b>{t('⋯ → Agregar al índice')}</b> {t('en una página para ponerle un título, por ejemplo "Tema 3: Congruencias".')}</span>
           </div>
         )
       )}
@@ -120,8 +121,8 @@ export function PageSidebar(props: Props) {
         marked.length ? thumbList(marked, false) : (
           <div className="sidebar-empty">
             <Bookmark size={28} strokeWidth={1.5} />
-            <p>No hay páginas marcadas.</p>
-            <span>Marca las páginas importantes con <b>⋯ → Marcar página</b>.</span>
+            <p>{t('No hay páginas marcadas.')}</p>
+            <span>{t('Marca las páginas importantes con')} <b>{t('⋯ → Marcar página')}</b>.</span>
           </div>
         )
       )}

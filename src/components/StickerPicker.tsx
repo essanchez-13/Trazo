@@ -1,6 +1,7 @@
 import { useMemo, useRef } from 'react'
 import { Clock } from 'lucide-react'
 import { STICKER_PACKS, getSticker, stickerUrl, type Sticker } from '../stickers'
+import { t } from '../i18n'
 
 const RECENT_KEY = 'trazo.recentStickers'
 
@@ -20,7 +21,7 @@ export function StickerPicker({ onPick }: { onPick: (st: Sticker) => void }) {
   const recent = useMemo(() => readRecent().map(getSticker).filter((s): s is Sticker => !!s), [])
 
   const sections = [
-    ...(recent.length ? [{ id: 'recent', label: 'Recientes', items: recent }] : []),
+    ...(recent.length ? [{ id: 'recent', label: t('Recientes'), items: recent }] : []),
     ...STICKER_PACKS,
   ]
 
@@ -37,7 +38,7 @@ export function StickerPicker({ onPick }: { onPick: (st: Sticker) => void }) {
     <div className="sticker-picker">
       <div className="sticker-packs">
         {recent.length > 0 && (
-          <button onClick={() => jump('recent')} title="Recientes"><Clock size={18} /></button>
+          <button onClick={() => jump('recent')} title={t('Recientes')}><Clock size={18} /></button>
         )}
         {STICKER_PACKS.map((p) => {
           const icon = getSticker(p.icon)!

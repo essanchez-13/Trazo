@@ -5,6 +5,7 @@ import {
 } from 'lucide-react'
 import type { Page } from '../types'
 import { PaperPanel, type PaperScope } from './PaperPanel'
+import { t } from '../i18n'
 
 interface Props {
   page: Page
@@ -36,7 +37,7 @@ export function PageMenu(p: Props) {
   if (view === 'paper') {
     return (
       <div className="page-menu">
-        <BackHeader label="Cambiar plantilla" onBack={() => setView('main')} />
+        <BackHeader label={t('Cambiar plantilla')} onBack={() => setView('main')} />
         <PaperPanel page={p.page} pageNumber={p.index + 1} onApply={p.onPaper} />
       </div>
     )
@@ -46,7 +47,7 @@ export function PageMenu(p: Props) {
     const save = () => { p.onTitle(title.trim()); p.close() }
     return (
       <div className="page-menu">
-        <BackHeader label={p.page.title ? 'Título en el índice' : 'Agregar al índice'} onBack={() => setView('main')} />
+        <BackHeader label={p.page.title ? t('Título en el índice') : t('Agregar al índice')} onBack={() => setView('main')} />
         <input
           className="input"
           autoFocus
@@ -54,11 +55,11 @@ export function PageMenu(p: Props) {
           onChange={(e) => setTitle(e.target.value)}
           onFocus={(e) => e.target.select()}
           onKeyDown={(e) => e.key === 'Enter' && save()}
-          placeholder="Ej.: Tema 3 · Congruencias"
+          placeholder={t('Ej.: Tema 3 · Congruencias')}
         />
         <div className="menu-actions">
-          {p.page.title && <button className="btn ghost" onClick={() => { p.onTitle(''); p.close() }}>Quitar del índice</button>}
-          <button className="btn primary" onClick={save}>Guardar</button>
+          {p.page.title && <button className="btn ghost" onClick={() => { p.onTitle(''); p.close() }}>{t('Quitar del índice')}</button>}
+          <button className="btn primary" onClick={save}>{t('Guardar')}</button>
         </div>
       </div>
     )
@@ -72,7 +73,7 @@ export function PageMenu(p: Props) {
     }
     return (
       <div className="page-menu">
-        <BackHeader label="Ir a página" onBack={() => setView('main')} />
+        <BackHeader label={t('Ir a página')} onBack={() => setView('main')} />
         <div className="goto-row">
           <input
             className="input"
@@ -85,7 +86,7 @@ export function PageMenu(p: Props) {
             onFocus={(e) => e.target.select()}
             onKeyDown={(e) => e.key === 'Enter' && go()}
           />
-          <span>de {p.total}</span>
+          <span>{t('de {total}', { total: p.total })}</span>
           <button className="btn primary" onClick={go}>Ir</button>
         </div>
       </div>
@@ -94,22 +95,22 @@ export function PageMenu(p: Props) {
 
   return (
     <div className="page-menu">
-      <div className="page-menu-head">Página {p.index + 1}</div>
+      <div className="page-menu-head">{t('Página')} {p.index + 1}</div>
       <MenuItem icon={p.page.bookmark ? <BookmarkMinus size={17} /> : <Bookmark size={17} />} onClick={act(p.onBookmark)}>
-        {p.page.bookmark ? 'Quitar marcador' : 'Marcar página'}
+        {p.page.bookmark ? t('Quitar marcador') : t('Marcar página')}
       </MenuItem>
-      <MenuItem icon={<Copy size={17} />} onClick={act(p.onCopy)}>Copiar página</MenuItem>
-      {p.canPaste && <MenuItem icon={<ClipboardPaste size={17} />} onClick={act(p.onPaste)}>Pegar página después</MenuItem>}
-      <MenuItem icon={<CopyPlus size={17} />} onClick={act(p.onDuplicate)}>Duplicar página</MenuItem>
-      <MenuItem icon={<RotateCw size={17} />} onClick={act(p.onRotate)}>Rotar página</MenuItem>
+      <MenuItem icon={<Copy size={17} />} onClick={act(p.onCopy)}>{t('Copiar página')}</MenuItem>
+      {p.canPaste && <MenuItem icon={<ClipboardPaste size={17} />} onClick={act(p.onPaste)}>{t('Pegar página después')}</MenuItem>}
+      <MenuItem icon={<CopyPlus size={17} />} onClick={act(p.onDuplicate)}>{t('Duplicar página')}</MenuItem>
+      <MenuItem icon={<RotateCw size={17} />} onClick={act(p.onRotate)}>{t('Rotar página')}</MenuItem>
       <MenuItem icon={<ListPlus size={17} />} onClick={() => setView('title')} more>
-        {p.page.title ? 'Renombrar en el índice' : 'Agregar al índice'}
+        {p.page.title ? t('Renombrar en el índice') : t('Agregar al índice')}
       </MenuItem>
-      <MenuItem icon={<FileCog size={17} />} onClick={() => setView('paper')} more>Cambiar plantilla</MenuItem>
-      <MenuItem icon={<ArrowRightToLine size={17} />} onClick={() => setView('goto')} hint={`${p.index + 1} de ${p.total}`}>Ir a página</MenuItem>
-      <div className="page-menu-sep">Limpiar o eliminar</div>
-      <MenuItem icon={<Eraser size={17} />} onClick={act(p.onClear)} danger>Limpiar página</MenuItem>
-      {p.total > 1 && <MenuItem icon={<Trash2 size={17} />} onClick={act(p.onDelete)} danger>Eliminar página</MenuItem>}
+      <MenuItem icon={<FileCog size={17} />} onClick={() => setView('paper')} more>{t('Cambiar plantilla')}</MenuItem>
+      <MenuItem icon={<ArrowRightToLine size={17} />} onClick={() => setView('goto')} hint={t('{n} de {total}', { n: p.index + 1, total: p.total })}>{t('Ir a página')}</MenuItem>
+      <div className="page-menu-sep">{t('Limpiar o eliminar')}</div>
+      <MenuItem icon={<Eraser size={17} />} onClick={act(p.onClear)} danger>{t('Limpiar página')}</MenuItem>
+      {p.total > 1 && <MenuItem icon={<Trash2 size={17} />} onClick={act(p.onDelete)} danger>{t('Eliminar página')}</MenuItem>}
     </div>
   )
 }

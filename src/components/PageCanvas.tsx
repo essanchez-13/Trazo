@@ -14,6 +14,7 @@ import {
   DIRS, FONT, drawLinks, drawNode, drawRoute, elbowPath, linkAt, linkRoute, nearestPort, nodeAt, nodePath, portPoint, ports,
   routeEnds, routeSamples, type Port, type Route,
 } from '../ink/diagram'
+import { t } from '../i18n'
 
 const HOLD_MS = 480
 const SEL_PAD = 8
@@ -925,49 +926,49 @@ export const PageCanvas = memo(function PageCanvas(props: Props) {
         >
           {onlyLinks ? (
             <>
-              <button className={`sel-btn ${(chosen.links[0].style ?? (chosen.links[0].fromPort === undefined ? 'straight' : 'elbow')) === 'elbow' ? 'on' : ''}`} onClick={() => patchLinks(withPorts({ style: 'elbow' }))} title="Con codos"><CornerDownRight size={16} /></button>
-              <button className={`sel-btn ${chosen.links[0].style === 'curve' ? 'on' : ''}`} onClick={() => patchLinks(withPorts({ style: 'curve' }))} title="Curva"><Spline size={16} /></button>
-              <button className={`sel-btn ${chosen.links[0].style === 'straight' || (!chosen.links[0].style && chosen.links[0].fromPort === undefined) ? 'on' : ''}`} onClick={() => patchLinks({ style: 'straight' })} title="Recta"><Slash size={16} /></button>
+              <button className={`sel-btn ${(chosen.links[0].style ?? (chosen.links[0].fromPort === undefined ? 'straight' : 'elbow')) === 'elbow' ? 'on' : ''}`} onClick={() => patchLinks(withPorts({ style: 'elbow' }))} title={t('Con codos')}><CornerDownRight size={16} /></button>
+              <button className={`sel-btn ${chosen.links[0].style === 'curve' ? 'on' : ''}`} onClick={() => patchLinks(withPorts({ style: 'curve' }))} title={t('Curva')}><Spline size={16} /></button>
+              <button className={`sel-btn ${chosen.links[0].style === 'straight' || (!chosen.links[0].style && chosen.links[0].fromPort === undefined) ? 'on' : ''}`} onClick={() => patchLinks({ style: 'straight' })} title={t('Recta')}><Slash size={16} /></button>
               <span className="sel-divider" />
-              <button className={`sel-btn ${chosen.links[0].arrow === 'end' ? 'on' : ''}`} onClick={() => patchLinks({ arrow: 'end' })} title="Flecha"><MoveRight size={16} /></button>
-              <button className={`sel-btn ${chosen.links[0].arrow === 'both' ? 'on' : ''}`} onClick={() => patchLinks({ arrow: 'both' })} title="Doble flecha"><ArrowLeftRight size={16} /></button>
-              <button className={`sel-btn ${chosen.links[0].arrow === 'none' ? 'on' : ''}`} onClick={() => patchLinks({ arrow: 'none' })} title="Sin flecha"><Minus size={16} /></button>
-              <button className={`sel-btn ${chosen.links[0].dashed ? 'on' : ''}`} onClick={() => patchLinks({ dashed: !chosen.links[0].dashed })} title="Punteada"><Minus size={16} strokeDasharray="3 3" /></button>
+              <button className={`sel-btn ${chosen.links[0].arrow === 'end' ? 'on' : ''}`} onClick={() => patchLinks({ arrow: 'end' })} title={t('Flecha')}><MoveRight size={16} /></button>
+              <button className={`sel-btn ${chosen.links[0].arrow === 'both' ? 'on' : ''}`} onClick={() => patchLinks({ arrow: 'both' })} title={t('Doble flecha')}><ArrowLeftRight size={16} /></button>
+              <button className={`sel-btn ${chosen.links[0].arrow === 'none' ? 'on' : ''}`} onClick={() => patchLinks({ arrow: 'none' })} title={t('Sin flecha')}><Minus size={16} /></button>
+              <button className={`sel-btn ${chosen.links[0].dashed ? 'on' : ''}`} onClick={() => patchLinks({ dashed: !chosen.links[0].dashed })} title={t('Punteada')}><Minus size={16} strokeDasharray="3 3" /></button>
               <span className="sel-divider" />
               {PEN_COLORS.map((c) => (
-                <button key={c} className="sel-swatch" style={{ background: c }} onClick={() => patchLinks({ color: c })} title="Color" />
+                <button key={c} className="sel-swatch" style={{ background: c }} onClick={() => patchLinks({ color: c })} title={t('Color')} />
               ))}
             </>
           ) : onlyDiagram ? (
             <>
-              <button className="sel-swatch none" onClick={() => patchNodes({ fill: null })} title="Sin relleno" />
+              <button className="sel-swatch none" onClick={() => patchNodes({ fill: null })} title={t('Sin relleno')} />
               {NODE_FILLS.map((c) => (
-                <button key={c} className="sel-swatch" style={{ background: c }} onClick={() => patchNodes({ fill: c })} title="Relleno" />
+                <button key={c} className="sel-swatch" style={{ background: c }} onClick={() => patchNodes({ fill: c })} title={t('Relleno')} />
               ))}
               <span className="sel-divider" />
               {PEN_COLORS.slice(0, 4).map((c) => (
-                <button key={c} className="sel-swatch ring" style={{ ['--c' as string]: c }} onClick={() => patchNodes({ color: c })} title="Borde y texto" />
+                <button key={c} className="sel-swatch ring" style={{ ['--c' as string]: c }} onClick={() => patchNodes({ color: c })} title={t('Borde y texto')} />
               ))}
               <span className="sel-divider" />
-              <button className="sel-btn" onClick={() => patchNodes({ fontSize: Math.max(10, chosen.nodes[0].fontSize - 2) })} title="Letra más pequeña"><Type size={13} /></button>
-              <button className="sel-btn" onClick={() => patchNodes({ fontSize: Math.min(64, chosen.nodes[0].fontSize + 2) })} title="Letra más grande"><Type size={18} /></button>
+              <button className="sel-btn" onClick={() => patchNodes({ fontSize: Math.max(10, chosen.nodes[0].fontSize - 2) })} title={t('Letra más pequeña')}><Type size={13} /></button>
+              <button className="sel-btn" onClick={() => patchNodes({ fontSize: Math.min(64, chosen.nodes[0].fontSize + 2) })} title={t('Letra más grande')}><Type size={18} /></button>
               {chosen.nodes.length === 1 && (
                 <button className="sel-btn text-btn" onClick={() => setEditing(chosen.nodes[0].id)} title="Escribir (doble toque)">Aa</button>
               )}
             </>
           ) : (
             chosen.strokes.some((s) => s.tool === 'pen') && PEN_COLORS.map((c) => (
-              <button key={c} className="sel-swatch" style={{ background: c }} onClick={() => recolorStrokes(c)} title="Cambiar color" />
+              <button key={c} className="sel-swatch" style={{ background: c }} onClick={() => recolorStrokes(c)} title={t('Cambiar color')} />
             ))
           )}
           {!onlyLinks && (
             <>
               <span className="sel-divider" />
-              <button className="sel-btn" onClick={props.onCopySelection} title="Copiar (Ctrl+C)"><Copy size={16} /></button>
-              <button className="sel-btn" onClick={duplicateSelection} title="Duplicar"><CopyPlus size={16} /></button>
+              <button className="sel-btn" onClick={props.onCopySelection} title={t('Copiar (Ctrl+C)')}><Copy size={16} /></button>
+              <button className="sel-btn" onClick={duplicateSelection} title={t('Duplicar')}><CopyPlus size={16} /></button>
             </>
           )}
-          <button className="sel-btn danger" onClick={removeSelected} title="Eliminar"><Trash2 size={16} /></button>
+          <button className="sel-btn danger" onClick={removeSelected} title={t('Eliminar')}><Trash2 size={16} /></button>
         </div>
       )}
     </div>

@@ -45,8 +45,19 @@ async function remove(key: string) {
   else await del(key)
 }
 
-export const loadLibrary = async (): Promise<Library> =>
-  (await read<Library>('library')) ?? { folders: [], notebooks: [] }
+export async function loadLibrary(): Promise<Library> {
+  const lib = await read<Library>('library')
+  if (lib) return lib
+  // Demo web: la primera visita arranca con un cuaderno y una pizarra de ejemplo.
+  if (!window.trazo) {
+    const { demoContent } = await import('./demo')
+    const { library, docs } = demoContent()
+    await Promise.all(docs.map(saveNotebook))
+    await saveLibrary(library)
+    return library
+  }
+  return { folders: [], notebooks: [] }
+}
 
 export const saveLibrary = (lib: Library) => write('library', lib)
 

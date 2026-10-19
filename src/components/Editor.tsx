@@ -29,6 +29,7 @@ import { StickerPicker, pushRecent } from './StickerPicker'
 import { PageMenu } from './PageMenu'
 import { SizeControl } from './SizeControl'
 import { EraserOptions } from './EraserOptions'
+import { t } from '../i18n'
 
 const PAGE_GAP = 28
 const PAGES_PAD_TOP = 70
@@ -620,9 +621,9 @@ export function Editor({ meta, active, onMetaChange }: Props) {
   }
 
   const saveTitle = () => {
-    const t = title.trim() || 'Sin título'
-    setTitle(t)
-    if (t !== meta.title) onMetaChange(meta.id, { title: t })
+    const next = title.trim() || t('Sin título')
+    setTitle(next)
+    if (next !== meta.title) onMetaChange(meta.id, { title: next })
   }
 
   const closePageMenu = useCallback(() => setPageMenu(null), [])
@@ -640,12 +641,12 @@ export function Editor({ meta, active, onMetaChange }: Props) {
         await exportTrazo(meta, cur)
       } else {
         const list = kind === 'pdf' ? cur.pages : [cur.pages[pageIndex]]
-        const name = kind === 'pdf' ? meta.title : `${meta.title} - página ${pageIndex + 1}`
-        await exportPdf(name, list, (d, t) => setExporting(`Creando PDF… ${d} de ${t}`))
+        const name = kind === 'pdf' ? meta.title : t('{title} - página {n}', { title: meta.title, n: pageIndex + 1 })
+        await exportPdf(name, list, (d, total) => setExporting(t('Creando PDF… {d} de {t}', { d, t: total })))
       }
       setExportMenu(false)
     } catch (err) {
-      alert('No se pudo exportar: ' + (err as Error).message)
+      alert(t('No se pudo exportar: {msg}', { msg: (err as Error).message }))
     } finally {
       setExporting(null)
     }
@@ -667,7 +668,7 @@ export function Editor({ meta, active, onMetaChange }: Props) {
     <div className={`editor ${active ? '' : 'is-hidden'}`}>
       <header className="topbar toolbar">
         <div className="bar-left">
-          <button className={`icon-btn ${sidebar ? 'on' : ''}`} onClick={toggleSidebar} title="Páginas, índice y marcadores">
+          <button className={`icon-btn ${sidebar ? 'on' : ''}`} onClick={toggleSidebar} title={t('Páginas, índice y marcadores')}>
             <PanelLeft size={18} />
           </button>
           <input
@@ -681,15 +682,15 @@ export function Editor({ meta, active, onMetaChange }: Props) {
 
         <div className="bar-center">
           <div className="tool-group">
-            <ToolButton active={tool === 'lasso'} onClick={() => setTool('lasso')} label="Lazo (L)"><Lasso size={19} /></ToolButton>
-            <ToolButton active={tool === 'pen'} onClick={() => setTool('pen')} label="Pluma (P)">{PEN_ICONS[penType]}</ToolButton>
-            <ToolButton active={tool === 'highlighter'} onClick={() => setTool('highlighter')} label="Resaltador (H)"><Highlighter size={19} /></ToolButton>
-            <ToolButton active={tool === 'eraser'} onClick={() => setTool('eraser')} label="Borrador (E)"><Eraser size={19} /></ToolButton>
-            <ToolButton active={tool === 'shape'} onClick={() => setTool('shape')} label="Formas (F)"><Shapes size={19} /></ToolButton>
-            <ToolButton active={tool === 'diagram'} onClick={() => setTool('diagram')} label="Diagramas: cajas con texto y flechas (D)"><Workflow size={19} /></ToolButton>
+            <ToolButton active={tool === 'lasso'} onClick={() => setTool('lasso')} label={t('Lazo (L)')}><Lasso size={19} /></ToolButton>
+            <ToolButton active={tool === 'pen'} onClick={() => setTool('pen')} label={t('Pluma (P)')}>{PEN_ICONS[penType]}</ToolButton>
+            <ToolButton active={tool === 'highlighter'} onClick={() => setTool('highlighter')} label={t('Resaltador (H)')}><Highlighter size={19} /></ToolButton>
+            <ToolButton active={tool === 'eraser'} onClick={() => setTool('eraser')} label={t('Borrador (E)')}><Eraser size={19} /></ToolButton>
+            <ToolButton active={tool === 'shape'} onClick={() => setTool('shape')} label={t('Formas (F)')}><Shapes size={19} /></ToolButton>
+            <ToolButton active={tool === 'diagram'} onClick={() => setTool('diagram')} label={t('Diagramas: cajas con texto y flechas (D)')}><Workflow size={19} /></ToolButton>
           </div>
           <span className="bar-divider" />
-          <button className="icon-btn" onClick={() => fileRef.current?.click()} title="Insertar imagen (o pega con Ctrl+V)">
+          <button className="icon-btn" onClick={() => fileRef.current?.click()} title={t('Insertar imagen (o pega con Ctrl+V)')}>
             <ImagePlus size={19} />
           </button>
           <input
@@ -709,7 +710,7 @@ export function Editor({ meta, active, onMetaChange }: Props) {
             onClose={closeStickers}
             className="sticker-pop"
             trigger={
-              <button className={`icon-btn ${stickers ? 'on' : ''}`} onClick={() => setStickers((v) => !v)} title="Stickers">
+              <button className={`icon-btn ${stickers ? 'on' : ''}`} onClick={() => setStickers((v) => !v)} title={t('Stickers')}>
                 <StickerIcon size={19} />
               </button>
             }
@@ -719,7 +720,7 @@ export function Editor({ meta, active, onMetaChange }: Props) {
         </div>
 
         <div className="bar-right">
-          <button className="icon-btn" onClick={() => addPage(pages[pageIndex]?.paper ?? meta.paper, pageIndex)} title="Agregar página después de esta">
+          <button className="icon-btn" onClick={() => addPage(pages[pageIndex]?.paper ?? meta.paper, pageIndex)} title={t('Agregar página después de esta')}>
             <FilePlus2 size={18} />
           </button>
           {menuPage && (
@@ -729,7 +730,7 @@ export function Editor({ meta, active, onMetaChange }: Props) {
               align="right"
               className="page-menu-pop"
               trigger={
-                <button className={`icon-btn ${pageMenu !== null ? 'on' : ''}`} onClick={() => setPageMenu(pageMenu === null ? pageIndex : null)} title="Opciones de página">
+                <button className={`icon-btn ${pageMenu !== null ? 'on' : ''}`} onClick={() => setPageMenu(pageMenu === null ? pageIndex : null)} title={t('Opciones de página')}>
                   <MoreHorizontal size={19} />
                 </button>
               }
@@ -763,29 +764,29 @@ export function Editor({ meta, active, onMetaChange }: Props) {
             align="right"
             className="export-pop"
             trigger={
-              <button className={`icon-btn ${exportMenu ? 'on' : ''}`} onClick={() => setExportMenu((v) => !v)} title="Exportar y compartir">
+              <button className={`icon-btn ${exportMenu ? 'on' : ''}`} onClick={() => setExportMenu((v) => !v)} title={t('Exportar y compartir')}>
                 <Share size={18} />
               </button>
             }
           >
-            <div className="page-menu-head">Exportar</div>
+            <div className="page-menu-head">{t('Exportar')}</div>
             {exporting ? (
               <p className="export-status">{exporting}</p>
             ) : (
               <>
                 <button className="menu-item" onClick={() => runExport('pdf')}>
-                  <span>PDF · todo el cuaderno<small>Para compartir con cualquiera</small></span>
+                  <span>{t('PDF · todo el cuaderno')}<small>{t('Para compartir con cualquiera')}</small></span>
                 </button>
                 <button className="menu-item" onClick={() => runExport('pdf-page')}>
-                  <span>PDF · solo la página {pageIndex + 1}</span>
+                  <span>{t('PDF · solo la página')} {pageIndex + 1}</span>
                 </button>
                 <button className="menu-item" onClick={() => runExport('trazo')}>
-                  <span>Archivo Trazo<small>Editable, para abrirlo en otra copia de Trazo</small></span>
+                  <span>{t('Archivo Trazo')}<small>{t('Editable, para abrirlo en otra copia de Trazo')}</small></span>
                 </button>
               </>
             )}
           </Popover>
-          <button className="icon-btn" onClick={() => setSettingsOpen(true)} title="Ajustes"><SettingsIcon size={18} /></button>
+          <button className="icon-btn" onClick={() => setSettingsOpen(true)} title={t('Ajustes')}><SettingsIcon size={18} /></button>
         </div>
       </header>
 
@@ -805,8 +806,8 @@ export function Editor({ meta, active, onMetaChange }: Props) {
 
         <div className="canvas-area">
           <div className="float-history">
-            <button className="icon-btn" onClick={undo} disabled={!undoStack.current.length} title="Deshacer (Ctrl+Z)"><Undo2 size={18} /></button>
-            <button className="icon-btn" onClick={redo} disabled={!redoStack.current.length} title="Rehacer (Ctrl+Y)"><Redo2 size={18} /></button>
+            <button className="icon-btn" onClick={undo} disabled={!undoStack.current.length} title={t('Deshacer (Ctrl+Z)')}><Undo2 size={18} /></button>
+            <button className="icon-btn" onClick={redo} disabled={!redoStack.current.length} title={t('Rehacer (Ctrl+Y)')}><Redo2 size={18} /></button>
           </div>
 
           {showOptions && (
@@ -835,7 +836,7 @@ export function Editor({ meta, active, onMetaChange }: Props) {
               )}
               {tool === 'diagram' && (
                 <>
-                  <button className={`opt-btn ${nodeKind === null ? 'active' : ''}`} onClick={() => setNodeKind(null)} title="Mover y seleccionar (la manita)">
+                  <button className={`opt-btn ${nodeKind === null ? 'active' : ''}`} onClick={() => setNodeKind(null)} title={t('Mover y seleccionar (la manita)')}>
                     <Hand size={18} />
                   </button>
                   <span className="bar-divider" />
@@ -846,8 +847,8 @@ export function Editor({ meta, active, onMetaChange }: Props) {
                   ))}
                   <span className="bar-divider" />
                   <span className="opt-hint">{nodeKind
-                    ? 'Arrastra en la hoja para dibujar la figura del tamaño que quieras'
-                    : 'Arrastra una figura para moverla · doble toque para escribir · arrastra sus puntitos para conectar'}</span>
+                    ? t('Arrastra en la hoja para dibujar la figura del tamaño que quieras')
+                    : t('Arrastra una figura para moverla · doble toque para escribir · arrastra sus puntitos para conectar')}</span>
                 </>
               )}
               {tool === 'shape' && (
@@ -858,7 +859,7 @@ export function Editor({ meta, active, onMetaChange }: Props) {
                     align="left"
                     className="shape-pop"
                     trigger={
-                      <button className="shape-trigger" onClick={() => setShapeMenu((v) => !v)} title="Tipo de forma">
+                      <button className="shape-trigger" onClick={() => setShapeMenu((v) => !v)} title={t('Tipo de forma')}>
                         {SHAPE_ICONS[shapeKind]}
                         <ChevronDown size={14} />
                       </button>
@@ -874,7 +875,7 @@ export function Editor({ meta, active, onMetaChange }: Props) {
                         <span>{s.label}</span>
                       </button>
                     ))}
-                    <p className="pop-hint">Mantén Shift para cuadrados, círculos y ángulos exactos.</p>
+                    <p className="pop-hint">{t('Mantén Shift para cuadrados, círculos y ángulos exactos.')}</p>
                   </Popover>
                   <button
                     className={`opt-btn ${shapeFill ? 'active' : ''}`}
@@ -948,7 +949,7 @@ export function Editor({ meta, active, onMetaChange }: Props) {
                   />
                   <div className="page-actions">
                     <span>{i + 1}</span>
-                    <button className="icon-btn small" onClick={() => setPageMenu(i)} title="Opciones de página">
+                    <button className="icon-btn small" onClick={() => setPageMenu(i)} title={t('Opciones de página')}>
                       <MoreHorizontal size={15} />
                     </button>
                   </div>
@@ -958,9 +959,9 @@ export function Editor({ meta, active, onMetaChange }: Props) {
               {doc && (
                 <div className="add-page" style={{ width: PAGE_W * zoom }}>
                   <button className="add-page-btn" onClick={() => addPage(pages[pages.length - 1]?.paper ?? meta.paper)}>
-                    <Plus size={18} /> Agregar página
+                    <Plus size={18} /> {t('Agregar página')}
                   </button>
-                  <button className="add-page-more" onClick={() => setPaperMenu((v) => !v)}>Otro tipo de hoja</button>
+                  <button className="add-page-more" onClick={() => setPaperMenu((v) => !v)}>{t('Otro tipo de hoja')}</button>
                   {paperMenu && (
                     <div className="paper-menu">
                       {PAPERS.map((p) => (
@@ -977,9 +978,9 @@ export function Editor({ meta, active, onMetaChange }: Props) {
           </div>
 
           <div className="float-zoom">
-            <button className="icon-btn small" onClick={() => zoomAt(stepZoom(zoom, -1))} title="Alejar (Ctrl -)"><Minus size={15} /></button>
-            <button className="zoom-label" onClick={() => zoomAt(1)} title="Restablecer al 100%">{Math.round(zoom * 100)}%</button>
-            <button className="icon-btn small" onClick={() => zoomAt(stepZoom(zoom, 1))} title="Acercar (Ctrl +)"><Plus size={15} /></button>
+            <button className="icon-btn small" onClick={() => zoomAt(stepZoom(zoom, -1))} title={t('Alejar (Ctrl -)')}><Minus size={15} /></button>
+            <button className="zoom-label" onClick={() => zoomAt(1)} title={t('Restablecer al 100%')}>{Math.round(zoom * 100)}%</button>
+            <button className="icon-btn small" onClick={() => zoomAt(stepZoom(zoom, 1))} title={t('Acercar (Ctrl +)')}><Plus size={15} /></button>
           </div>
           {pages.length > 0 && <div className="page-indicator">{pageIndex + 1} / {pages.length}</div>}
         </div>

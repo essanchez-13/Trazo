@@ -1,3 +1,4 @@
+import { lang, t } from './i18n'
 export type Paper =
   | 'blank' | 'lined' | 'lined-narrow' | 'lined-wide' | 'lined-plain'
   | 'grid' | 'grid-small' | 'grid-large' | 'dots' | 'dots-large' | 'cornell'
@@ -235,18 +236,18 @@ export const uid = () => crypto.randomUUID()
 
 export const COVERS = ['#2d3a44', '#1f4e8c', '#7c2f3c', '#35684d', '#c46a3a', '#d9ae3a', '#62518f', '#aab6c1', '#e38aa8', '#6fb3b8']
 export const COVER_DESIGNS: { id: string; label: string }[] = [
-  { id: 'classic', label: 'Clásica' },
-  { id: 'linen', label: 'Lino' },
-  { id: 'band', label: 'Liga' },
-  { id: 'dots', label: 'Lunares' },
-  { id: 'stripes', label: 'Rayas' },
-  { id: 'waves', label: 'Ondas' },
-  { id: 'geo', label: 'Geométrica' },
-  { id: 'aurora', label: 'Aurora' },
-  { id: 'terrazzo', label: 'Terrazo' },
-  { id: 'stars', label: 'Estrellas' },
-  { id: 'grid', label: 'Cuadros' },
-  { id: 'kraft', label: 'Kraft' },
+  { id: 'classic', label: t('Clásica') },
+  { id: 'linen', label: t('Lino') },
+  { id: 'band', label: t('Liga') },
+  { id: 'dots', label: t('Lunares') },
+  { id: 'stripes', label: t('Rayas') },
+  { id: 'waves', label: t('Ondas') },
+  { id: 'geo', label: t('Geométrica') },
+  { id: 'aurora', label: t('Aurora') },
+  { id: 'terrazzo', label: t('Terrazo') },
+  { id: 'stars', label: t('Estrellas') },
+  { id: 'grid', label: t('Cuadros') },
+  { id: 'kraft', label: t('Kraft') },
 ]
 export const FOLDER_COLORS = ['#7aa2d6', '#6fc2a0', '#f2b35e', '#ef8a8a', '#b495e0', '#8c9aad', '#f09ac4', '#5fc4d4']
 export const ACCENTS = ['#2f5bea', '#7b4fe0', '#0f9b8e', '#e0457b', '#e8792b', '#5b6270']
@@ -259,52 +260,52 @@ export const PEN_SIZES = [2.6, 4, 6.5]
 export const HIGHLIGHTER_SIZES = [14, 20, 28]
 
 export const PEN_TYPES: { id: PenType; label: string }[] = [
-  { id: 'fountain', label: 'Pluma estilográfica' },
-  { id: 'ball', label: 'Bolígrafo' },
-  { id: 'brush', label: 'Pincel' },
+  { id: 'fountain', label: t('Pluma estilográfica') },
+  { id: 'ball', label: t('Bolígrafo') },
+  { id: 'brush', label: t('Pincel') },
 ]
 
 export const PAPERS: { id: Paper; label: string }[] = [
-  { id: 'blank', label: 'En blanco' },
-  { id: 'lined', label: 'Rayado' },
-  { id: 'lined-narrow', label: 'Rayado angosto' },
-  { id: 'lined-wide', label: 'Rayado ancho' },
-  { id: 'lined-plain', label: 'Rayado sin margen' },
-  { id: 'grid', label: 'Cuadriculado' },
-  { id: 'grid-small', label: 'Cuadrícula fina' },
-  { id: 'grid-large', label: 'Cuadrícula grande' },
-  { id: 'dots', label: 'Puntos' },
-  { id: 'dots-large', label: 'Puntos grandes' },
-  { id: 'cornell', label: 'Cornell' },
+  { id: 'blank', label: t('En blanco') },
+  { id: 'lined', label: t('Rayado') },
+  { id: 'lined-narrow', label: t('Rayado angosto') },
+  { id: 'lined-wide', label: t('Rayado ancho') },
+  { id: 'lined-plain', label: t('Rayado sin margen') },
+  { id: 'grid', label: t('Cuadriculado') },
+  { id: 'grid-small', label: t('Cuadrícula fina') },
+  { id: 'grid-large', label: t('Cuadrícula grande') },
+  { id: 'dots', label: t('Puntos') },
+  { id: 'dots-large', label: t('Puntos grandes') },
+  { id: 'cornell', label: t('Cornell') },
 ]
 
 export const PAPER_COLORS: { id: PaperColor; label: string; bg: string; dark: boolean }[] = [
-  { id: 'cream', label: 'Crema', bg: '#fffefb', dark: false },
-  { id: 'white', label: 'Blanco', bg: '#ffffff', dark: false },
-  { id: 'yellow', label: 'Amarillo', bg: '#fbf4dc', dark: false },
-  { id: 'gray', label: 'Gris', bg: '#eff0f2', dark: false },
-  { id: 'blue', label: 'Azul', bg: '#eaf2fb', dark: false },
-  { id: 'slate', label: 'Pizarra', bg: '#2a2e35', dark: true },
-  { id: 'black', label: 'Negro', bg: '#151618', dark: true },
+  { id: 'cream', label: t('Crema'), bg: '#fffefb', dark: false },
+  { id: 'white', label: t('Blanco'), bg: '#ffffff', dark: false },
+  { id: 'yellow', label: t('Amarillo'), bg: '#fbf4dc', dark: false },
+  { id: 'gray', label: t('Gris'), bg: '#eff0f2', dark: false },
+  { id: 'blue', label: t('Azul'), bg: '#eaf2fb', dark: false },
+  { id: 'slate', label: lang === 'en' ? 'Slate' : 'Pizarra', bg: '#2a2e35', dark: true },
+  { id: 'black', label: t('Negro'), bg: '#151618', dark: true },
 ]
 
 export const paperInfo = (c?: PaperColor) => PAPER_COLORS.find((p) => p.id === c) ?? PAPER_COLORS[0]
 
 export const SHAPES: { id: ShapeTool; label: string }[] = [
-  { id: 'line', label: 'Línea' },
-  { id: 'arrow', label: 'Flecha' },
-  { id: 'rect', label: 'Rectángulo' },
-  { id: 'rounded', label: 'Redondeado' },
-  { id: 'ellipse', label: 'Círculo' },
-  { id: 'diamond', label: 'Rombo' },
-  { id: 'triangle', label: 'Triángulo' },
+  { id: 'line', label: t('Línea') },
+  { id: 'arrow', label: t('Flecha') },
+  { id: 'rect', label: t('Rectángulo') },
+  { id: 'rounded', label: t('Redondeado') },
+  { id: 'ellipse', label: t('Círculo') },
+  { id: 'diamond', label: t('Rombo') },
+  { id: 'triangle', label: t('Triángulo') },
 ]
 
 export const NODE_KINDS: { id: NodeKind; label: string }[] = [
-  { id: 'rounded', label: 'Caja' },
-  { id: 'rect', label: 'Rectángulo' },
-  { id: 'ellipse', label: 'Óvalo' },
-  { id: 'diamond', label: 'Decisión' },
-  { id: 'note', label: 'Nota' },
-  { id: 'text', label: 'Texto' },
+  { id: 'rounded', label: t('Caja') },
+  { id: 'rect', label: t('Rectángulo') },
+  { id: 'ellipse', label: t('Óvalo') },
+  { id: 'diamond', label: t('Decisión') },
+  { id: 'note', label: t('Nota') },
+  { id: 'text', label: t('Texto') },
 ]

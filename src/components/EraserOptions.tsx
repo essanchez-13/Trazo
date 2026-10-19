@@ -3,6 +3,7 @@ import { Highlighter, Image as ImageIcon, PenTool, Shapes, SlidersHorizontal, Tr
 import type { EraserSettings } from '../types'
 import { ERASER_SIZES } from '../types'
 import { Popover } from './Popover'
+import { t } from '../i18n'
 
 interface Props {
   settings: EraserSettings
@@ -11,10 +12,10 @@ interface Props {
 }
 
 const FILTERS: { key: 'pen' | 'highlighter' | 'shapes' | 'images'; label: string; icon: React.ReactNode }[] = [
-  { key: 'pen', label: 'Pluma', icon: <PenTool size={16} /> },
-  { key: 'highlighter', label: 'Resaltador', icon: <Highlighter size={16} /> },
-  { key: 'shapes', label: 'Formas', icon: <Shapes size={16} /> },
-  { key: 'images', label: 'Imágenes y stickers', icon: <ImageIcon size={16} /> },
+  { key: 'pen', label: t('Pluma'), icon: <PenTool size={16} /> },
+  { key: 'highlighter', label: t('Resaltador'), icon: <Highlighter size={16} /> },
+  { key: 'shapes', label: t('Formas'), icon: <Shapes size={16} /> },
+  { key: 'images', label: t('Imágenes y stickers'), icon: <ImageIcon size={16} /> },
 ]
 
 /** Barra del borrador: modo, tamaño y ajustes avanzados (se recuerdan). */
@@ -26,10 +27,10 @@ export function EraserOptions({ settings, onChange, onClearPage }: Props) {
   return (
     <>
       <div className="segmented small eraser-mode">
-        <button className={settings.mode === 'stroke' ? 'active' : ''} onClick={() => onChange({ mode: 'stroke' })} title="Borra el trazo entero al tocarlo">
+        <button className={settings.mode === 'stroke' ? 'active' : ''} onClick={() => onChange({ mode: 'stroke' })} title={t('Borra el trazo entero al tocarlo')}>
           Trazo completo
         </button>
-        <button className={settings.mode === 'precise' ? 'active' : ''} onClick={() => onChange({ mode: 'precise' })} title="Borra solo la parte que tocas">
+        <button className={settings.mode === 'precise' ? 'active' : ''} onClick={() => onChange({ mode: 'precise' })} title={t('Borra solo la parte que tocas')}>
           Parcial
         </button>
       </div>
@@ -40,7 +41,7 @@ export function EraserOptions({ settings, onChange, onClearPage }: Props) {
             key={s}
             className={`size-btn ${settings.size === s ? 'active' : ''}`}
             onClick={() => onChange({ size: s })}
-            title={['Pequeño', 'Mediano', 'Grande'][i]}
+            title={[t('Pequeño'), t('Mediano'), t('Grande')][i]}
           >
             <span className="eraser-dot" style={{ width: 6 + i * 5, height: 6 + i * 5 }} />
           </button>
@@ -53,14 +54,14 @@ export function EraserOptions({ settings, onChange, onClearPage }: Props) {
         align="right"
         className="eraser-pop"
         trigger={
-          <button className={`opt-btn ${open ? 'active' : ''}`} onClick={() => setOpen((v) => !v)} title="Ajustes del borrador">
+          <button className={`opt-btn ${open ? 'active' : ''}`} onClick={() => setOpen((v) => !v)} title={t('Ajustes del borrador')}>
             <SlidersHorizontal size={17} />
             {offCount > 0 && <span className="opt-badge">{offCount}</span>}
           </button>
         }
       >
-        <div className="page-menu-head">Ajustes del borrador</div>
-        <div className="pop-label">Qué borra</div>
+        <div className="page-menu-head">{t('Ajustes del borrador')}</div>
+        <div className="pop-label">{t('Qué borra')}</div>
         {FILTERS.map((f) => (
           <label key={f.key} className="switch-row">
             {f.icon}
@@ -68,9 +69,9 @@ export function EraserOptions({ settings, onChange, onClearPage }: Props) {
             <input type="checkbox" className="switch" checked={settings[f.key]} onChange={(e) => onChange({ [f.key]: e.target.checked })} />
           </label>
         ))}
-        <p className="pop-hint">El borrador ignora lo que tenga apagado.</p>
+        <p className="pop-hint">{t('El borrador ignora lo que tenga apagado.')}</p>
 
-        <div className="pop-label">Tamaño</div>
+        <div className="pop-label">{t('Tamaño')}</div>
         <div className="size-row">
           <input
             className="slider"
@@ -86,11 +87,11 @@ export function EraserOptions({ settings, onChange, onClearPage }: Props) {
 
         <div className="eraser-sep" />
         <label className="switch-row">
-          <span>Volver a la herramienta anterior al soltar</span>
+          <span>{t('Volver a la herramienta anterior al soltar')}</span>
           <input type="checkbox" className="switch" checked={settings.autoDeselect} onChange={(e) => onChange({ autoDeselect: e.target.checked })} />
         </label>
         <button className="menu-item danger" onClick={() => { onClearPage(); setOpen(false) }}>
-          <Trash2 size={16} /> <span>Limpiar página</span>
+          <Trash2 size={16} /> <span>{t('Limpiar página')}</span>
         </button>
       </Popover>
     </>

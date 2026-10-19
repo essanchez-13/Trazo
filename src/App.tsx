@@ -8,6 +8,8 @@ import { Editor, newPage } from './components/Editor'
 import { exportPdf, exportTrazo, importPdf, importTrazo } from './exporter'
 import { UpdateToast, WhatsNew } from './updates'
 import { hideSplash } from './splash'
+import { t } from './i18n'
+import { WebDemoBanner } from './components/WebDemoBanner'
 
 const TABS_KEY = 'trazo.tabs'
 
@@ -94,9 +96,9 @@ export function App() {
     let last: string | null = null
     for (const file of files) {
       try {
-        setBusy('Importando ' + file.name + '…')
+        setBusy(t('Importando') + ' ' + file.name + '…')
         const imp = /\.pdf$/i.test(file.name)
-          ? await importPdf(file, (d, t) => setBusy(`Importando PDF… página ${d} de ${t}`))
+          ? await importPdf(file, (d, total) => setBusy(t('Importando PDF… página {d} de {t}', { d, t: total })))
           : await importTrazo(file)
         const now = Date.now()
         const meta: NotebookMeta = { ...imp.meta, id: uid(), folderId, createdAt: now, updatedAt: now }
@@ -104,7 +106,7 @@ export function App() {
         update((l) => ({ ...l, notebooks: [...l.notebooks, meta] }))
         last = meta.id
       } catch (err) {
-        alert('No se pudo importar ' + file.name + ': ' + (err as Error).message)
+        alert(t('No se pudo importar {name}', { name: file.name }) + ': ' + (err as Error).message)
       }
     }
     setBusy(null)
@@ -117,10 +119,10 @@ export function App() {
     if (!meta || !doc) return
     try {
       setBusy('Preparando…')
-      if (kind === 'pdf') await exportPdf(meta.title, doc.pages, (d, t) => setBusy(`Creando PDF… ${d} de ${t}`))
+      if (kind === 'pdf') await exportPdf(meta.title, doc.pages, (d, total) => setBusy(t('Creando PDF… {d} de {t}', { d, t: total })))
       else await exportTrazo(meta, doc)
     } catch (err) {
-      alert('No se pudo exportar: ' + (err as Error).message)
+      alert(t('No se pudo exportar: {msg}', { msg: (err as Error).message }))
     } finally {
       setBusy(null)
     }
@@ -144,8 +146,9 @@ export function App() {
 
   return (
     <div className="app">
+      <WebDemoBanner />
       <nav className="tabbar">
-        <button className={`tab home ${activeId === null ? 'active' : ''}`} onClick={() => setActive(null)} title="Inicio">
+        <button className={`tab home ${activeId === null ? 'active' : ''}`} onClick={() => setActive(null)} title={t('Inicio')}>
           <Home size={17} />
         </button>
         {openMetas.map((m) => (
@@ -158,12 +161,12 @@ export function App() {
           >
             <span className="tab-dot" style={{ background: m.cover }} />
             <span className="tab-title">{m.title}</span>
-            <button className="tab-close" onClick={(e) => { e.stopPropagation(); closeTab(m.id) }} title="Cerrar pestaña">
+            <button className="tab-close" onClick={(e) => { e.stopPropagation(); closeTab(m.id) }} title={t('Cerrar pestaña')}>
               <X size={14} />
             </button>
           </div>
         ))}
-        <button className="tab-new" onClick={() => setActive(null)} title="Abrir otro cuaderno">
+        <button className="tab-new" onClick={() => setActive(null)} title={t('Abrir otro cuaderno')}>
           <Plus size={16} />
         </button>
         <div className="tabbar-drag" />

@@ -3,6 +3,7 @@ import { PAGE_W, pageSize, uid } from './types'
 import { drawPage } from './ink/render'
 import { preloadImages, storeImageFile } from './assets'
 import { loadAsset, saveAsset } from './storage'
+import { t } from './i18n'
 
 // ---- Exportar ----
 
@@ -21,7 +22,7 @@ async function renderPage(page: Page, scale: number): Promise<HTMLCanvasElement>
   return c
 }
 
-const safeName = (s: string) => s.replace(/[\\/:*?"<>|]+/g, '').trim() || 'Cuaderno'
+const safeName = (s: string) => s.replace(/[\\/:*?"<>|]+/g, '').trim() || t('Cuaderno')
 
 export function download(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
@@ -91,7 +92,7 @@ export interface Imported {
 
 export async function importTrazo(file: File): Promise<Imported> {
   const data = JSON.parse(await file.text()) as TrazoFile & { coverImage?: string }
-  if (data.format !== 'trazo' || !Array.isArray(data.pages)) throw new Error('Este archivo no es un cuaderno de Trazo.')
+  if (data.format !== 'trazo' || !Array.isArray(data.pages)) throw new Error(t('Este archivo no es un cuaderno de Trazo.'))
   for (const [id, url] of Object.entries(data.assets ?? {})) await saveAsset(id, url)
   // Ids nuevos, para poder importar el mismo archivo dos veces sin choques.
   const pages = data.pages.map((p) => ({ ...p, id: uid() }))

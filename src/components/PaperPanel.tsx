@@ -4,6 +4,7 @@ import type { Page, PageSizeKind, Paper, PaperColor } from '../types'
 import { PAPER_COLORS, PAPERS } from '../types'
 import { DEFAULT_MARGIN, paperLayout, type PaperOptions } from '../ink/render'
 import { PaperPreview } from './PaperPreview'
+import { t } from '../i18n'
 
 export type PaperScope = 'page' | 'all'
 export interface PaperPatch {
@@ -42,24 +43,24 @@ export function PaperPanel({ page, pageNumber, onApply }: Props) {
   return (
     <div className="paper-panel">
       <div className="segmented small">
-        <button className={scope === 'page' ? 'active' : ''} onClick={() => setScope('page')}>Página {pageNumber}</button>
-        <button className={scope === 'all' ? 'active' : ''} onClick={() => setScope('all')}>Todas las páginas</button>
+        <button className={scope === 'page' ? 'active' : ''} onClick={() => setScope('page')}>{t('Página')} {pageNumber}</button>
+        <button className={scope === 'all' ? 'active' : ''} onClick={() => setScope('all')}>{t('Todas las páginas')}</button>
       </div>
 
-      <div className="pop-label">Formato</div>
+      <div className="pop-label">{t('Formato')}</div>
       <div className="segmented small">
         <button className={format === 'portrait' ? 'active' : ''} onClick={() => onApply({ size: 'a4', landscape: false }, scope)}>
-          <RectangleVertical size={15} /> Vertical
+          <RectangleVertical size={15} /> {t('Vertical')}
         </button>
         <button className={format === 'landscape' ? 'active' : ''} onClick={() => onApply({ size: 'a4', landscape: true }, scope)}>
-          <RectangleHorizontal size={15} /> Horizontal
+          <RectangleHorizontal size={15} /> {t('Horizontal')}
         </button>
         <button className={format === 'board' ? 'active' : ''} onClick={() => onApply({ size: 'board', landscape: false }, scope)}>
-          <Presentation size={15} /> Pizarra
+          <Presentation size={15} /> {t('Pizarra')}
         </button>
       </div>
 
-      <div className="pop-label">Tipo de hoja</div>
+      <div className="pop-label">{t('Tipo de hoja')}</div>
       <PaperGrid value={page.paper} color={color} onChange={(p) => onApply({ paper: p }, scope)} />
 
       {range && (
@@ -68,13 +69,13 @@ export function PaperPanel({ page, pageNumber, onApply }: Props) {
             Ajustar la hoja
             {customized && (
               <button className="link-btn" onClick={() => onApply({ gap: undefined, margin: undefined }, scope)}>
-                <RotateCcw size={12} /> Original
+                <RotateCcw size={12} /> {t('Original')}
               </button>
             )}
           </div>
           <div className="paper-adjust">
             <label className="adjust-row">
-              <span>{layout.kind === 'lines' || layout.kind === 'cornell' ? 'Espacio entre líneas' : layout.kind === 'grid' ? 'Tamaño de cuadros' : 'Espacio entre puntos'}</span>
+              <span>{layout.kind === 'lines' || layout.kind === 'cornell' ? t('Espacio entre líneas') : layout.kind === 'grid' ? t('Tamaño de cuadros') : t('Espacio entre puntos')}</span>
               <input
                 className="slider"
                 type="range"
@@ -98,7 +99,7 @@ export function PaperPanel({ page, pageNumber, onApply }: Props) {
                 </label>
                 {layout.margin > 0 && (
                   <label className="adjust-row">
-                    <span>Posición del margen</span>
+                    <span>{t('Posición del margen')}</span>
                     <input
                       className="slider"
                       type="range"
@@ -117,7 +118,7 @@ export function PaperPanel({ page, pageNumber, onApply }: Props) {
         </>
       )}
 
-      <div className="pop-label">Color de hoja</div>
+      <div className="pop-label">{t('Color de hoja')}</div>
       <PaperColorRow value={color} onChange={(c) => onApply({ color: c }, scope)} />
     </div>
   )

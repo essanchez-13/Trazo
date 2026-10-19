@@ -4,6 +4,7 @@ import type { Stroke } from '../types'
 import { drawStroke } from '../ink/render'
 import { Popover } from './Popover'
 import { moveItem, useSortable } from './useSortable'
+import { t } from '../i18n'
 
 interface Props {
   /** Grosores guardados: se ven como botones rápidos en la barra. */
@@ -53,16 +54,16 @@ export function SizeControl({ saved, onSavedChange, value, onChange, min, max, s
         onClose={close}
         className="size-pop"
         trigger={
-          <button className={`size-custom ${!isSaved ? 'active' : ''} ${open ? 'open' : ''}`} onClick={() => setOpen((v) => !v)} title="Ajustar grosor">
+          <button className={`size-custom ${!isSaved ? 'active' : ''} ${open ? 'open' : ''}`} onClick={() => setOpen((v) => !v)} title={t('Ajustar grosor')}>
             {fmt(value)}
             <ChevronDown size={13} />
           </button>
         }
       >
-        <div className="pop-label">Grosor</div>
+        <div className="pop-label">{t('Grosor')}</div>
         <SizePreview size={value} color={color} tool={tool} />
         <div className="size-row">
-          <button className="icon-btn small" onClick={() => onChange(clamp(value - step))} title="Más fino"><Minus size={15} /></button>
+          <button className="icon-btn small" onClick={() => onChange(clamp(value - step))} title={t('Más fino')}><Minus size={15} /></button>
           <input
             className="slider"
             type="range"
@@ -72,7 +73,7 @@ export function SizeControl({ saved, onSavedChange, value, onChange, min, max, s
             value={value}
             onChange={(e) => onChange(clamp(Number(e.target.value)))}
           />
-          <button className="icon-btn small" onClick={() => onChange(clamp(value + step))} title="Más grueso"><Plus size={15} /></button>
+          <button className="icon-btn small" onClick={() => onChange(clamp(value + step))} title={t('Más grueso')}><Plus size={15} /></button>
           <NumberField value={value} onCommit={(n) => onChange(clamp(n))} />
         </div>
         <div className="slider-labels">
@@ -83,7 +84,7 @@ export function SizeControl({ saved, onSavedChange, value, onChange, min, max, s
         <div className="pop-label saved-head">
           Mis grosores
           <button className="link-btn" disabled={isSaved} onClick={() => onSavedChange([...saved, value])}>
-            <BookmarkPlus size={13} /> Guardar {fmt(value)}
+            <BookmarkPlus size={13} /> {t('Guardar')} {fmt(value)}
           </button>
         </div>
         <div className={`saved-sizes sortable-row ${sort.rowCls('sizes', saved.length)}`} {...sort.rowProps('sizes', saved.length)}>
@@ -93,7 +94,7 @@ export function SizeControl({ saved, onSavedChange, value, onChange, min, max, s
               {...sort.itemProps('sizes', i)}
               className={`size-chip ${same(value, s) ? 'active' : ''} ${sort.cls('sizes', i)}`}
               onClick={() => onChange(s)}
-              title="Usar este grosor · arrastra para ordenar"
+              title={t('Usar este grosor · arrastra para ordenar')}
             >
               {dot(s)}
               {fmt(s)}
@@ -101,7 +102,7 @@ export function SizeControl({ saved, onSavedChange, value, onChange, min, max, s
                 <button
                   className="chip-remove"
                   onClick={(e) => { e.stopPropagation(); onSavedChange(saved.filter((x) => !same(x, s))) }}
-                  title="Quitar"
+                  title={t('Quitar')}
                 >
                   <X size={10} strokeWidth={3} />
                 </button>
@@ -109,7 +110,7 @@ export function SizeControl({ saved, onSavedChange, value, onChange, min, max, s
             </span>
           ))}
         </div>
-        <p className="pop-hint">Los grosores guardados aparecen en la barra. Arrástralos para cambiar el orden.</p>
+        <p className="pop-hint">{t('Los grosores guardados aparecen en la barra. Arrástralos para cambiar el orden.')}</p>
       </Popover>
     </div>
   )

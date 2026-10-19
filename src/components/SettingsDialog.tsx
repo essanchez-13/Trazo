@@ -7,11 +7,15 @@ import { drawStroke } from '../ink/render'
 import { mapPressure } from '../ink/shapes'
 import { Modal } from './Modal'
 import { updateLabel, useAppVersion, useUpdateStatus } from '../updates'
+import { lang, setLang, t, type Lang } from '../i18n'
+
+// Los nombres de idioma van en su propio idioma, para que se reconozcan siempre.
+const LANGS: { id: Lang; label: string }[] = [{ id: 'en', label: 'English' }, { id: 'es', label: 'Español' }]
 
 const THEMES: { id: Settings['theme']; label: string; icon: React.ReactNode }[] = [
-  { id: 'light', label: 'Claro', icon: <Sun size={16} /> },
-  { id: 'dark', label: 'Oscuro', icon: <Moon size={16} /> },
-  { id: 'system', label: 'Sistema', icon: <Monitor size={16} /> },
+  { id: 'light', label: t('Claro'), icon: <Sun size={16} /> },
+  { id: 'dark', label: t('Oscuro'), icon: <Moon size={16} /> },
+  { id: 'system', label: t('Sistema'), icon: <Monitor size={16} /> },
 ]
 
 export function SettingsDialog({ onClose }: { onClose: () => void }) {
@@ -20,10 +24,10 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const updateStatus = useUpdateStatus()
 
   return (
-    <Modal title="Ajustes" onClose={onClose} footer={<button className="btn primary" onClick={onClose}>Listo</button>}>
+    <Modal title={t('Ajustes')} onClose={onClose} footer={<button className="btn primary" onClick={onClose}>{t('Listo')}</button>}>
       <div className="settings">
         <div className="field">
-          <span>Apariencia</span>
+          <span>{t('Apariencia')}</span>
           <div className="segmented">
             {THEMES.map((t) => (
               <button key={t.id} className={settings.theme === t.id ? 'active' : ''} onClick={() => update({ theme: t.id })}>
@@ -34,7 +38,18 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="field">
-          <span>Color de acento</span>
+          <span>{t('Idioma')}</span>
+          <div className="segmented">
+            {LANGS.map((l) => (
+              <button key={l.id} className={lang === l.id ? 'active' : ''} onClick={() => setLang(l.id)}>
+                {l.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="field">
+          <span>{t('Color de acento')}</span>
           <div className="cover-swatches">
             {ACCENTS.map((c) => (
               <button key={c} className={`cover-swatch ${settings.accent === c ? 'active' : ''}`} style={{ background: c }} onClick={() => update({ accent: c })} />
@@ -43,7 +58,7 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="field">
-          <span>Sensibilidad a la presión del lápiz</span>
+          <span>{t('Sensibilidad a la presión del lápiz')}</span>
           <PressurePreview pressure={settings.pressure} />
           <input
             className="slider"
@@ -55,14 +70,14 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
             onChange={(e) => update({ pressure: Number(e.target.value) })}
           />
           <div className="slider-labels">
-            <span>Uniforme</span>
-            <span>Marcada</span>
+            <span>{t('Uniforme')}</span>
+            <span>{t('Marcada')}</span>
           </div>
-          <p className="field-hint">Si escribes fuerte y el trazo se ve muy grueso, bájala. Aplica a lo que escribas de ahora en adelante.</p>
+          <p className="field-hint">{t('Si escribes fuerte y el trazo se ve muy grueso, bájala. Aplica a lo que escribas de ahora en adelante.')}</p>
         </div>
 
         <div className="field">
-          <span>Estabilización del trazo</span>
+          <span>{t('Estabilización del trazo')}</span>
           <input
             className="slider"
             type="range"
@@ -73,24 +88,24 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
             onChange={(e) => update({ stabilization: Number(e.target.value) })}
           />
           <div className="slider-labels">
-            <span>Precisa</span>
-            <span>Suavizada</span>
+            <span>{t('Precisa')}</span>
+            <span>{t('Suavizada')}</span>
           </div>
-          <p className="field-hint">Más baja: el trazo sigue exacto la punta del lápiz. Más alta: las líneas salen más suaves, pero con un poco de retraso.</p>
+          <p className="field-hint">{t('Más baja: el trazo sigue exacto la punta del lápiz. Más alta: las líneas salen más suaves, pero con un poco de retraso.')}</p>
         </div>
 
         {window.trazo && (
           <div className="field about">
-            <span>Acerca de Trazo</span>
+            <span>{t('Acerca de Trazo')}</span>
             <div className="about-row">
               <img src="./icon.png" alt="" />
               <div>
                 <strong>Trazo {version ?? ''}</strong>
-                <p className="field-hint">{updateLabel(updateStatus) || 'Se actualiza sola cuando hay una versión nueva.'}</p>
+                <p className="field-hint">{updateLabel(updateStatus) || t('Se actualiza sola cuando hay una versión nueva.')}</p>
               </div>
               {updateStatus?.state === 'ready'
-                ? <button className="btn primary" onClick={() => window.trazo?.installUpdate()}>Reiniciar</button>
-                : <button className="btn ghost" onClick={() => window.trazo?.checkUpdates()}>Buscar actualizaciones</button>}
+                ? <button className="btn primary" onClick={() => window.trazo?.installUpdate()}>{t('Reiniciar')}</button>
+                : <button className="btn ghost" onClick={() => window.trazo?.checkUpdates()}>{t('Buscar actualizaciones')}</button>}
             </div>
           </div>
         )}

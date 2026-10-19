@@ -9,6 +9,7 @@ import { storeImageFile, useAssetUrl } from '../assets'
 import { Modal } from './Modal'
 import { PaperColorRow, PaperGrid } from './PaperPanel'
 import { SettingsDialog } from './SettingsDialog'
+import { lang, t } from '../i18n'
 
 export interface NewNotebook {
   title: string
@@ -47,7 +48,7 @@ type Dialog =
   | { kind: 'move'; target: Target }
   | { kind: 'delete'; target: Target }
 
-const dateFmt = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', year: 'numeric' })
+const dateFmt = new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'short', year: 'numeric' })
 const IMPORT_TYPES = '.trazo,.pdf,application/pdf'
 
 export function Library(props: Props) {
@@ -96,7 +97,7 @@ export function Library(props: Props) {
     library.folders.filter((f) => f.parentId === id).length + library.notebooks.filter((n) => n.folderId === id).length
 
   const current = trail[trail.length - 1]
-  const homeName = library.home?.name?.trim() || 'Documentos'
+  const homeName = library.home?.name?.trim() || t('Documentos')
 
   // Fondo: el de la carpeta actual, o el de la carpeta de arriba más cercana, o el del inicio.
   const background = [...trail].reverse().find((f) => f.background)?.background ?? library.home?.background
@@ -173,10 +174,10 @@ export function Library(props: Props) {
         </div>
         <div className="search">
           <Search size={16} />
-          <input placeholder="Buscar cuadernos y carpetas" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <input placeholder={t('Buscar cuadernos y carpetas')} value={query} onChange={(e) => setQuery(e.target.value)} />
         </div>
         <div className="bar-right">
-          <button className="icon-btn" onClick={() => setSettingsOpen(true)} title="Ajustes"><SettingsIcon size={18} /></button>
+          <button className="icon-btn" onClick={() => setSettingsOpen(true)} title={t('Ajustes')}><SettingsIcon size={18} /></button>
         </div>
       </header>
 
@@ -223,9 +224,9 @@ export function Library(props: Props) {
               />
             ) : (
               <h1 className="lib-title">
-                {q ? 'Resultados' : current ? current.name : homeName}
+                {q ? t('Resultados') : current ? current.name : homeName}
                 {!q && !current && (
-                  <button className="icon-btn small rename-btn" onClick={() => setRenaming(true)} title="Cambiar el nombre">
+                  <button className="icon-btn small rename-btn" onClick={() => setRenaming(true)} title={t('Cambiar el nombre')}>
                     <Pencil size={15} />
                   </button>
                 )}
@@ -234,17 +235,17 @@ export function Library(props: Props) {
           </div>
           <div className="lib-actions">
             <div className="card-menu-wrap new-wrap" onPointerDown={(e) => e.stopPropagation()}>
-              <button className="btn ghost" onClick={() => setBgMenu((v) => !v)} title={current ? 'Fondo de esta carpeta' : 'Fondo del inicio'}>
-                <Wallpaper size={17} /> Fondo
+              <button className="btn ghost" onClick={() => setBgMenu((v) => !v)} title={current ? t('Fondo de esta carpeta') : t('Fondo del inicio')}>
+                <Wallpaper size={17} /> {t('Fondo')}
               </button>
               {bgMenu && (
                 <div className="menu new-menu">
                   <button onClick={() => { setBgMenu(false); bgRef.current?.click() }}>
-                    <Wallpaper size={17} /> <span>{ownBackground ? 'Cambiar imagen' : 'Elegir una imagen'}<small>{current ? `Solo dentro de «${current.name}»` : `Para «${homeName}» y sus carpetas`}</small></span>
+                    <Wallpaper size={17} /> <span>{ownBackground ? t('Cambiar imagen') : t('Elegir una imagen')}<small>{current ? t('Solo dentro de «{name}»', { name: current.name }) : t('Para «{name}» y sus carpetas', { name: homeName })}</small></span>
                   </button>
                   {ownBackground && (
                     <button onClick={() => { setBgMenu(false); setBackground(undefined) }}>
-                      <ImageOff size={17} /> <span>Quitar fondo</span>
+                      <ImageOff size={17} /> <span>{t('Quitar fondo')}</span>
                     </button>
                   )}
                 </div>
@@ -261,8 +262,8 @@ export function Library(props: Props) {
                 }}
               />
             </div>
-            <button className="btn ghost" onClick={() => importRef.current?.click()} title="Importar un PDF o un archivo de Trazo">
-              <Upload size={17} /> Importar
+            <button className="btn ghost" onClick={() => importRef.current?.click()} title={t('Importar un PDF o un archivo de Trazo')}>
+              <Upload size={17} /> {t('Importar')}
             </button>
             <input
               ref={importRef}
@@ -277,19 +278,19 @@ export function Library(props: Props) {
               }}
             />
             <button className="btn ghost" onClick={() => setDialog({ kind: 'new-folder' })}>
-              <FolderPlus size={17} /> Carpeta
+              <FolderPlus size={17} /> {t('Carpeta')}
             </button>
             <div className="card-menu-wrap new-wrap" onPointerDown={(e) => e.stopPropagation()}>
               <button className="btn primary" onClick={() => setNewMenu((v) => !v)}>
-                <Plus size={17} /> Nuevo
+                <Plus size={17} /> {t('Nuevo')}
               </button>
               {newMenu && (
                 <div className="menu new-menu">
                   <button onClick={() => { setNewMenu(false); setDialog({ kind: 'new-notebook', board: false }) }}>
-                    <BookOpen size={17} /> <span>Cuaderno<small>Páginas para tomar apuntes</small></span>
+                    <BookOpen size={17} /> <span>{t('Cuaderno')}<small>{t('Páginas para tomar apuntes')}</small></span>
                   </button>
                   <button onClick={() => { setNewMenu(false); setDialog({ kind: 'new-notebook', board: true }) }}>
-                    <Presentation size={17} /> <span>Pizarra<small>Hoja grande para diagramas e ideas</small></span>
+                    <Presentation size={17} /> <span>{t('Pizarra')}<small>{t('Hoja grande para diagramas e ideas')}</small></span>
                   </button>
                 </div>
               )}
@@ -300,15 +301,15 @@ export function Library(props: Props) {
         {!folders.length && !notebooks.length ? (
           <div className="empty">
             {q ? (
-              <p>No hay resultados para “{query}”.</p>
+              <p>{t('No hay resultados para “{q}”.', { q: query })}</p>
             ) : (
               <>
                 <div className="empty-art" />
-                <p>{current ? 'Esta carpeta está vacía.' : 'Todavía no tienes cuadernos.'}</p>
+                <p>{current ? t('Esta carpeta está vacía.') : t('Todavía no tienes cuadernos.')}</p>
                 <button className="btn primary" onClick={() => setDialog({ kind: 'new-notebook', board: false })}>
-                  <Plus size={17} /> Crear cuaderno
+                  <Plus size={17} /> {t('Crear cuaderno')}
                 </button>
-                <span className="empty-hint">También puedes arrastrar aquí un PDF para escribirle encima.</span>
+                <span className="empty-hint">{t('También puedes arrastrar aquí un PDF para escribirle encima.')}</span>
               </>
             )}
           </div>
@@ -329,9 +330,9 @@ export function Library(props: Props) {
                   menuOpen={menu === f.id}
                   onMenu={() => setMenu(menu === f.id ? null : f.id)}
                   actions={[
-                    ['Editar carpeta', () => setDialog({ kind: 'edit', target: { type: 'folder', item: f } })],
-                    ['Mover a…', () => setDialog({ kind: 'move', target: { type: 'folder', item: f } })],
-                    ['Eliminar', () => setDialog({ kind: 'delete', target: { type: 'folder', item: f } }), true],
+                    [t('Editar carpeta'), () => setDialog({ kind: 'edit', target: { type: 'folder', item: f } })],
+                    [t('Mover a…'), () => setDialog({ kind: 'move', target: { type: 'folder', item: f } })],
+                    [t('Eliminar'), () => setDialog({ kind: 'delete', target: { type: 'folder', item: f } }), true],
                   ]}
                 />
               </div>
@@ -350,11 +351,11 @@ export function Library(props: Props) {
                   menuOpen={menu === n.id}
                   onMenu={() => setMenu(menu === n.id ? null : n.id)}
                   actions={[
-                    ['Editar portada', () => setDialog({ kind: 'edit', target: { type: 'notebook', item: n } })],
-                    ['Mover a…', () => setDialog({ kind: 'move', target: { type: 'notebook', item: n } })],
-                    ['Exportar PDF', () => props.onExport(n.id, 'pdf')],
-                    ['Exportar archivo Trazo', () => props.onExport(n.id, 'trazo')],
-                    ['Eliminar', () => setDialog({ kind: 'delete', target: { type: 'notebook', item: n } }), true],
+                    [t('Editar portada'), () => setDialog({ kind: 'edit', target: { type: 'notebook', item: n } })],
+                    [t('Mover a…'), () => setDialog({ kind: 'move', target: { type: 'notebook', item: n } })],
+                    [t('Exportar PDF'), () => props.onExport(n.id, 'pdf')],
+                    [t('Exportar archivo Trazo'), () => props.onExport(n.id, 'trazo')],
+                    [t('Eliminar'), () => setDialog({ kind: 'delete', target: { type: 'notebook', item: n } }), true],
                   ]}
                 />
               </div>
@@ -363,10 +364,12 @@ export function Library(props: Props) {
         )}
         {dragItem && (
           <div className="drag-hint">
-            Suelta sobre una carpeta para guardarlo ahí{trail.length ? `, o sobre la ruta de arriba (por ejemplo «${homeName}») para sacarlo` : ''}.
+            {trail.length
+              ? t('Suelta sobre una carpeta para guardarlo ahí, o sobre la ruta de arriba (por ejemplo «{home}») para sacarlo.', { home: homeName })
+              : t('Suelta sobre una carpeta para guardarlo ahí.')}
           </div>
         )}
-        {dropping && <div className="drop-hint"><Upload size={28} /> Suelta aquí tus PDF o archivos de Trazo</div>}
+        {dropping && <div className="drop-hint"><Upload size={28} /> {t('Suelta aquí tus PDF o archivos de Trazo')}</div>}
       </main>
 
       {props.busy && (
@@ -375,8 +378,8 @@ export function Library(props: Props) {
 
       {dialog?.kind === 'new-notebook' && (
         <NotebookDialog
-          heading={dialog.board ? 'Nueva pizarra' : 'Nuevo cuaderno'}
-          confirm="Crear"
+          heading={dialog.board ? t('Nueva pizarra') : t('Nuevo cuaderno')}
+          confirm={t('Crear')}
           initial={{
             title: '',
             cover: COVERS[library.notebooks.length % COVERS.length],
@@ -392,14 +395,14 @@ export function Library(props: Props) {
         />
       )}
       {dialog?.kind === 'new-folder' && (
-        <FolderDialog heading="Nueva carpeta" confirm="Crear" initial={{ name: '', color: FOLDER_COLORS[library.folders.length % FOLDER_COLORS.length] }}
+        <FolderDialog heading={t('Nueva carpeta')} confirm={t('Crear')} initial={{ name: '', color: FOLDER_COLORS[library.folders.length % FOLDER_COLORS.length] }}
           onClose={() => setDialog(null)}
           onSave={(v) => { props.onCreateFolder(v.name, v.color); setDialog(null) }} />
       )}
       {dialog?.kind === 'edit' && dialog.target.type === 'notebook' && (
         <NotebookDialog
-          heading="Editar portada"
-          confirm="Guardar"
+          heading={t('Editar portada')}
+          confirm={t('Guardar')}
           initial={{ ...dialog.target.item, coverDesign: dialog.target.item.coverDesign ?? 'classic', paperColor: dialog.target.item.paperColor ?? 'cream', size: dialog.target.item.size ?? 'a4', label: dialog.target.item.label ?? DEFAULT_LABEL }}
           onClose={() => setDialog(null)}
           onSave={(v) => {
@@ -409,7 +412,7 @@ export function Library(props: Props) {
         />
       )}
       {dialog?.kind === 'edit' && dialog.target.type === 'folder' && (
-        <FolderDialog heading="Editar carpeta" confirm="Guardar"
+        <FolderDialog heading={t('Editar carpeta')} confirm={t('Guardar')}
           initial={{ name: dialog.target.item.name, color: dialog.target.item.color ?? FOLDER_COLORS[0] }}
           onClose={() => setDialog(null)}
           onSave={(v) => { props.onUpdateFolder(dialog.target.item.id, { name: v.name, color: v.color }); setDialog(null) }} />
@@ -429,11 +432,11 @@ export function Library(props: Props) {
       )}
       {dialog?.kind === 'delete' && (
         <Modal
-          title={dialog.target.type === 'notebook' ? '¿Eliminar cuaderno?' : '¿Eliminar carpeta?'}
+          title={dialog.target.type === 'notebook' ? t('¿Eliminar cuaderno?') : t('¿Eliminar carpeta?')}
           onClose={() => setDialog(null)}
           footer={
             <>
-              <button className="btn ghost" onClick={() => setDialog(null)}>Cancelar</button>
+              <button className="btn ghost" onClick={() => setDialog(null)}>{t('Cancelar')}</button>
               <button
                 className="btn danger"
                 onClick={() => {
@@ -449,9 +452,9 @@ export function Library(props: Props) {
           }
         >
           {dialog.target.type === 'notebook' ? (
-            <p>“{dialog.target.item.title}” y todas sus páginas se eliminarán. Esto no se puede deshacer.</p>
+            <p>{t('“{title}” y todas sus páginas se eliminarán. Esto no se puede deshacer.', { title: dialog.target.item.title })}</p>
           ) : (
-            <p>La carpeta “{dialog.target.item.name}” se eliminará. Lo que tenga adentro se moverá a la carpeta superior.</p>
+            <p>{t('La carpeta “{name}” se eliminará. Lo que tenga adentro se moverá a la carpeta superior.', { name: dialog.target.item.name })}</p>
           )}
         </Modal>
       )}
@@ -518,7 +521,7 @@ export function Cover(props: {
       )}
       {!props.small && props.board && label.badge && (
         // Si el título está abajo, la marca se pasa arriba para no taparlo.
-        <span className={`cover-badge ${label.show && label.y > 60 ? 'top' : ''}`}>Pizarra</span>
+        <span className={`cover-badge ${label.show && label.y > 60 ? 'top' : ''}`}>{t('Pizarra')}</span>
       )}
     </div>
   )
@@ -551,7 +554,7 @@ function CardInfo(props: {
         <div className="card-sub">{props.sub}</div>
       </div>
       <div className="card-menu-wrap" onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
-        <button className="icon-btn small" onClick={props.onMenu} title="Opciones">
+        <button className="icon-btn small" onClick={props.onMenu} title={t('Opciones')}>
           <MoreHorizontal size={16} />
         </button>
         {props.menuOpen && (
@@ -588,7 +591,7 @@ function NotebookDialog(props: {
   const fileRef = useRef<HTMLInputElement>(null)
   const board = props.initial.size === 'board'
   const save = () => props.onSave({
-    title: title.trim() || (board ? 'Pizarra' : 'Sin título'),
+    title: title.trim() || (board ? t('Pizarra') : t('Sin título')),
     cover, coverDesign: design, coverImage: image, label, paper, paperColor, size: props.initial.size,
   })
 
@@ -598,7 +601,7 @@ function NotebookDialog(props: {
       onClose={props.onClose}
       footer={
         <>
-          <button className="btn ghost" onClick={props.onClose}>Cancelar</button>
+          <button className="btn ghost" onClick={props.onClose}>{t('Cancelar')}</button>
           <button className="btn primary" onClick={save} disabled={loadingImage}>{props.confirm}</button>
         </>
       }
@@ -606,18 +609,18 @@ function NotebookDialog(props: {
       <div className="nb-dialog">
         <div className="nb-preview">
           <Cover
-            color={cover} design={design} image={image} title={title || (board ? 'Pizarra' : 'Sin título')} board={board}
+            color={cover} design={design} image={image} title={title || (board ? t('Pizarra') : t('Sin título'))} board={board}
             label={label} onMoveLabel={(x, y) => patchLabel({ x, y })}
           />
-          {label.show && <p className="preview-hint">Arrastra el título para moverlo</p>}
+          {label.show && <p className="preview-hint">{t('Arrastra el título para moverlo')}</p>}
         </div>
         <div className="nb-fields">
           <label className="field">
-            <span>Título</span>
-            <AutoFocusInput value={title} onChange={setTitle} onEnter={save} placeholder={board ? 'Pizarra' : 'Sin título'} />
+            <span>{t('Título')}</span>
+            <AutoFocusInput value={title} onChange={setTitle} onEnter={save} placeholder={board ? t('Pizarra') : t('Sin título')} />
           </label>
           <div className="field">
-            <span>Diseño de portada</span>
+            <span>{t('Diseño de portada')}</span>
             <div className="design-grid">
               {COVER_DESIGNS.map((d) => (
                 <button
@@ -632,7 +635,7 @@ function NotebookDialog(props: {
             </div>
           </div>
           <div className="field">
-            <span>Color</span>
+            <span>{t('Color')}</span>
             <div className="cover-swatches">
               {COVERS.map((c) => (
                 <button key={c} className={`cover-swatch ${cover === c ? 'active' : ''}`} style={{ background: c }} onClick={() => setCover(c)} />
@@ -640,10 +643,10 @@ function NotebookDialog(props: {
             </div>
           </div>
           <div className="field">
-            <span>Etiqueta del título</span>
+            <span>{t('Etiqueta del título')}</span>
             <div className="label-controls">
-              <Toggle on={label.show} onChange={(show) => patchLabel({ show })} text="Mostrar" />
-              {board && <Toggle on={label.badge} onChange={(badge) => patchLabel({ badge })} text="Marca «Pizarra»" />}
+              <Toggle on={label.show} onChange={(show) => patchLabel({ show })} text={t('Mostrar')} />
+              {board && <Toggle on={label.badge} onChange={(badge) => patchLabel({ badge })} text={t('Marca «Pizarra»')} />}
             </div>
             {label.show && (
               <>
@@ -654,10 +657,10 @@ function NotebookDialog(props: {
                       className={`cover-swatch label-swatch ${c === 'glass' ? 'glass' : ''} ${label.bg === c ? 'active' : ''}`}
                       style={c === 'glass' ? undefined : { background: c }}
                       onClick={() => patchLabel({ bg: c })}
-                      title={c === 'glass' ? 'Vidrio' : c}
+                      title={c === 'glass' ? t('Vidrio') : c}
                     />
                   ))}
-                  <label className="cover-swatch custom-color" title="Otro color" style={LABEL_COLORS.includes(label.bg) ? undefined : { background: label.bg }}>
+                  <label className="cover-swatch custom-color" title={t('Otro color')} style={LABEL_COLORS.includes(label.bg) ? undefined : { background: label.bg }}>
                     <input type="color" value={label.bg.startsWith('#') ? label.bg : '#ffffff'} onChange={(e) => patchLabel({ bg: e.target.value })} />
                   </label>
                 </div>
@@ -665,21 +668,21 @@ function NotebookDialog(props: {
                   <div className="segmented small">
                     {(['s', 'm', 'l'] as const).map((sz, i) => (
                       <button key={sz} className={label.size === sz ? 'active' : ''} onClick={() => patchLabel({ size: sz })}>
-                        {['Pequeña', 'Mediana', 'Grande'][i]}
+                        {[t('Pequeña'), t('Mediana'), t('Grande')][i]}
                       </button>
                     ))}
                   </div>
-                  <button className="btn ghost small-btn" onClick={() => patchLabel({ x: DEFAULT_LABEL.x, y: DEFAULT_LABEL.y })}>Posición original</button>
+                  <button className="btn ghost small-btn" onClick={() => patchLabel({ x: DEFAULT_LABEL.x, y: DEFAULT_LABEL.y })}>{t('Posición original')}</button>
                 </div>
               </>
             )}
           </div>
           <div className="cover-image-row">
             <button className="btn ghost" onClick={() => fileRef.current?.click()} disabled={loadingImage}>
-              <ImagePlus size={16} /> {image ? 'Cambiar imagen' : 'Usar una imagen de portada'}
+              <ImagePlus size={16} /> {image ? t('Cambiar imagen') : t('Usar una imagen de portada')}
             </button>
             {image && (
-              <button className="btn ghost" onClick={() => setImage(undefined)} title="Quitar imagen"><X size={16} /></button>
+              <button className="btn ghost" onClick={() => setImage(undefined)} title={t('Quitar imagen')}><X size={16} /></button>
             )}
             <input
               ref={fileRef}
@@ -697,7 +700,7 @@ function NotebookDialog(props: {
           </div>
           {props.showPaper && (
             <div className="field">
-              <span>Hoja</span>
+              <span>{t('Hoja')}</span>
               <PaperGrid value={paper} color={paperColor} onChange={setPaper} />
               <PaperColorRow value={paperColor} onChange={setPaperColor} />
             </div>
@@ -726,14 +729,14 @@ function FolderDialog(props: {
 }) {
   const [name, setName] = useState(props.initial.name)
   const [color, setColor] = useState(props.initial.color)
-  const save = () => props.onSave({ name: name.trim() || 'Nueva carpeta', color })
+  const save = () => props.onSave({ name: name.trim() || t('Nueva carpeta'), color })
   return (
     <Modal
       title={props.heading}
       onClose={props.onClose}
       footer={
         <>
-          <button className="btn ghost" onClick={props.onClose}>Cancelar</button>
+          <button className="btn ghost" onClick={props.onClose}>{t('Cancelar')}</button>
           <button className="btn primary" onClick={save}>{props.confirm}</button>
         </>
       }
@@ -742,16 +745,16 @@ function FolderDialog(props: {
         <div className="folder-preview"><FolderArt color={color} count={0} /></div>
         <div className="nb-fields">
           <label className="field">
-            <span>Nombre</span>
-            <AutoFocusInput value={name} onChange={setName} onEnter={save} placeholder="Nueva carpeta" />
+            <span>{t('Nombre')}</span>
+            <AutoFocusInput value={name} onChange={setName} onEnter={save} placeholder={t('Nueva carpeta')} />
           </label>
           <div className="field">
-            <span>Color</span>
+            <span>{t('Color')}</span>
             <div className="cover-swatches">
               {FOLDER_COLORS.map((c) => (
                 <button key={c} className={`cover-swatch ${color === c ? 'active' : ''}`} style={{ background: c }} onClick={() => setColor(c)} />
               ))}
-              <label className="cover-swatch custom-color" title="Otro color" style={{ background: FOLDER_COLORS.includes(color) ? undefined : color }}>
+              <label className="cover-swatch custom-color" title={t('Otro color')} style={{ background: FOLDER_COLORS.includes(color) ? undefined : color }}>
                 <input type="color" value={color} onChange={(e) => setColor(e.target.value)} />
               </label>
             </div>
@@ -779,7 +782,7 @@ function MoveDialog(props: { library: Lib; target: Target; onClose: () => void; 
   const currentParent = target.type === 'notebook' ? target.item.folderId : target.item.parentId
   const [dest, setDest] = useState<string | null>(currentParent)
 
-  const rows: { id: string | null; name: string; depth: number; color?: string }[] = [{ id: null, name: library.home?.name?.trim() || 'Documentos', depth: 0 }]
+  const rows: { id: string | null; name: string; depth: number; color?: string }[] = [{ id: null, name: library.home?.name?.trim() || t('Documentos'), depth: 0 }]
   const walk = (parent: string | null, depth: number) => {
     library.folders
       .filter((f) => f.parentId === parent && !blocked.has(f.id))
@@ -790,12 +793,12 @@ function MoveDialog(props: { library: Lib; target: Target; onClose: () => void; 
 
   return (
     <Modal
-      title="Mover a…"
+      title={t('Mover a…')}
       onClose={props.onClose}
       footer={
         <>
-          <button className="btn ghost" onClick={props.onClose}>Cancelar</button>
-          <button className="btn primary" onClick={() => props.onMove(dest)}>Mover</button>
+          <button className="btn ghost" onClick={props.onClose}>{t('Cancelar')}</button>
+          <button className="btn primary" onClick={() => props.onMove(dest)}>{t('Mover')}</button>
         </>
       }
     >
