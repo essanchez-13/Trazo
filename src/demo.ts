@@ -84,7 +84,7 @@ function boardPages(): Page[] {
   const yes = node('text', 1270, 450, 90, 40, t('Sí'), { fontSize: 20, color: '#23875a' })
   const no = node('text', 1110, 650, 90, 40, t('No'), { fontSize: 20, color: '#d33f37' })
   return [{
-    id: uid(), paper: 'dots', color: 'white', size: 'board', strokes: [underline(145, 900, 240, '#8a4fd8')],
+    id: uid(), paper: 'dots', color: 'white', size: 'board', strokes: [underline(372, 1008, 236, '#8a4fd8')],
     nodes: [head, a, b, c, d, e, yes, no],
     links: [
       link(a, b, 1, 3), link(b, c, 1, 3), link(c, d, 1, 3, { color: '#23875a' }),
